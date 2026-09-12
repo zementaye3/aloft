@@ -1,0 +1,17 @@
+# Development dependencies only
+pytest==9.1.1
+pytest-asyncio==1.4.0
+pytest-cov==7.1.0
+ruff==0.8.4
+mongomock-motor==0.0.35
+respx==0.22.0
+fakeredis==2.26.1
+
+# Security scanning tools
+safety==3.2.4
+pip-audit==2.7.3
+bandit==1.7.9
+pip-licenses==5.5.5
+
+# Performance testing tools
+locust==2.31.5

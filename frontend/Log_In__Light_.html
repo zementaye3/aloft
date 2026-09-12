@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aloft — Log In</title>
+<style>
+  :root {
+    --ink: #14172b;
+    --blue: #2159e0;
+    --gray-600: #5b6072;
+    --gray-500: #767b8c;
+    --card-border: #ececef;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+  }
+
+  a { color: inherit; }
+
+  .app {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ---- Left image panel ---- */
+  .image-panel {
+    width: 50%;
+    position: relative;
+    background:
+      linear-gradient(180deg, rgba(4,20,55,0.55) 0%, rgba(4,20,55,0.05) 30%, rgba(4,20,55,0.15) 65%, rgba(4,20,55,0.85) 100%),
+      url('https://images.unsplash.com/photo-1444723121867-7a241cacace9?w=1200&q=80') center/cover no-repeat;
+    display: flex;
+    align-items: flex-end;
+    padding: 48px;
+  }
+
+  .image-panel-text h2 {
+    color: #fff;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 10px;
+  }
+
+  .image-panel-text p {
+    color: rgba(255,255,255,0.8);
+    font-size: 16px;
+    line-height: 1.5;
+    max-width: 340px;
+  }
+
+  /* ---- Right form panel ---- */
+  .form-panel {
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+
+  .form-inner {
+    width: 100%;
+    max-width: 448px;
+  }
+
+  .brand {
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 40px;
+  }
+
+  .form-inner h1 {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.7px;
+    margin-bottom: 10px;
+  }
+
+  .form-sub {
+    font-size: 15.5px;
+    color: var(--gray-500);
+    margin-bottom: 32px;
+  }
+
+  .field {
+    margin-bottom: 20px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .input-wrap input {
+    width: 100%;
+    border: 1px solid var(--card-border);
+    background: #f7f8fb;
+    border-radius: 12px;
+    padding: 14px 44px 14px 16px;
+    font-size: 15px;
+    color: var(--ink);
+    outline: none;
+  }
+
+  .input-wrap input::placeholder { color: #a9adb8; }
+
+  .input-wrap input:focus {
+    border-color: var(--ink);
+    background: #fff;
+  }
+
+  .input-wrap svg {
+    position: absolute;
+    right: 14px;
+    width: 18px;
+    height: 18px;
+    color: var(--gray-500);
+    cursor: pointer;
+  }
+
+  .row-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+
+  .remember {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 14.5px;
+    color: var(--ink);
+  }
+
+  .remember input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid #c7cad4;
+    border-radius: 5px;
+    appearance: none;
+    cursor: pointer;
+  }
+
+  .remember input[type="checkbox"]:checked {
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+
+  .forgot-link {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--blue);
+    text-decoration: none;
+  }
+
+  .submit-btn {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    padding: 17px;
+    border-radius: 999px;
+    font-size: 15.5px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 24px;
+  }
+
+  .submit-btn svg { width: 15px; height: 15px; }
+  .submit-btn:hover { background: #23273f; }
+
+  .signup-line {
+    font-size: 14.5px;
+    color: var(--gray-600);
+  }
+
+  .signup-line a {
+    color: var(--ink);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .form-error {
+    display: none;
+    background: #fdecea;
+    border: 1px solid #f5c2bc;
+    color: #b3261e;
+    font-size: 13.5px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+  }
+
+  .submit-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 900px) {
+    .app { flex-direction: column; }
+    .image-panel, .form-panel { width: 100%; }
+    .image-panel { min-height: 320px; padding: 32px 24px; }
+    .form-panel { padding: 40px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="image-panel">
+    <div class="image-panel-text">
+      <h2>Precision Flight Audio.</h2>
+      <p>Experience elite hardware and software integration.</p>
+    </div>
+  </div>
+
+  <div class="form-panel">
+    <div class="form-inner">
+      <div class="brand">Aloft</div>
+      <h1>Welcome back</h1>
+      <p class="form-sub">Enter your details to access your account.</p>
+
+      <div class="form-error" id="formError"></div>
+
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <label for="email">Email Address</label>
+          <div class="input-wrap">
+            <input id="email" type="email" placeholder="pilot@aloft.io" autocomplete="email" required />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 6l10 7 10-7"/></svg>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="input-wrap">
+            <input id="password" type="password" autocomplete="current-password" required />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+        </div>
+
+        <div class="row-between">
+          <label class="remember">
+            <input type="checkbox" id="remember" />
+            Remember me
+          </label>
+          <a href="Forgot_Password__Light_.html" class="forgot-link">Forgot password?</a>
+        </div>
+
+        <button class="submit-btn" type="submit" id="submitBtn">
+          <span id="submitLabel">Sign In</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </form>
+
+      <div class="signup-line">Don't have an account? <a href="sign-up.html">Sign up</a></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/api-client.js"></script>
+<script>
+  const form = document.getElementById('loginForm');
+  const errorBox = document.getElementById('formError');
+  const submitBtn = document.getElementById('submitBtn');
+  const submitLabel = document.getElementById('submitLabel');
+
+  // Already signed in? Skip straight to the dashboard.
+  if (AloftAuth.isLoggedIn()) {
+    window.location.href = 'Dashboard__Light_.html';
+  }
+
+  function showError(message) {
+    errorBox.textContent = message;
+    errorBox.style.display = 'block';
+  }
+
+  function hideError() {
+    errorBox.style.display = 'none';
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideError();
+
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    if (!email || !password) {
+      showError('Enter your email and password.');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitLabel.textContent = 'Signing in...';
+
+    try {
+      // Note: "Remember me" is not yet wired to a separate short-lived
+      // session mode — tokens are always persisted to localStorage for now.
+      await AloftApi.login(email, password);
+      window.location.href = 'Dashboard__Light_.html';
+    } catch (err) {
+      showError(err.message || 'Could not sign in. Check your details and try again.');
+      submitBtn.disabled = false;
+      submitLabel.textContent = 'Sign In';
+    }
+  });
+</script>
+
+</body>
+</html>

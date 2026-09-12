@@ -1,0 +1,53 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+
+# Env files (ignore actual .env files, but .env.docker is tracked as a template)
+.env
+backend/.env
+
+# Audio storage
+backend/audio_storage/
+
+# Large audio assets (use Git LFS or external storage instead)
+backend/music_assets/*.wav
+backend/music_assets/*.flac
+backend/music_assets/*.mp3
+
+# pytest / ruff caches
+.pytest_cache/
+.ruff_cache/
+
+# Coverage reports
+backend/.coverage
+backend/coverage.xml
+backend/htmlcov/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE / editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Local test scripts
+backend/scripts/simple_test.py
+backend/scripts/test_*.py
+backend/scripts/manual-tests/
+
+# Windows batch files (local dev only)
+backend/*.bat
+backend/start_server.bat
+backend/run_server.bat

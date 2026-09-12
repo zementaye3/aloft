@@ -1,0 +1,208 @@
+# Aloft — Session Log
+
+A short, dated summary per working session. Written by Claude, not
+generated from git history. See `CLAUDE.md` for the rules this project
+follows — durable conventions go there, not here.
+
+---
+
+## 2026-09-10 — Session 1: project setup + auth pages wired
+
+**Context loaded this session:** two uploads — `Aloft-main.zip` (the
+FastAPI backend, already fairly complete: auth, flights, POIs, audio/TTS,
+stories, sessions, journal, favorites, GDPR, legal) and `Coded_UI.zip`
+(19 static HTML page designs, no JS, not yet connected to anything).
+Repo (https://github.com/zementaye/aloft) was newly created and empty.
+
+**Decisions made (now recorded in CLAUDE.md):**
+- Monorepo layout: `backend/` + `frontend/` at repo root.
+- Frontend served locally on `http://localhost:5500` specifically (this
+  is load-bearing — the backend's password-reset email link is built
+  around that URL).
+- Shared `frontend/js/config.js` (API base URL) + `frontend/js/api-client.js`
+  (token storage, auto-refresh, typed API calls) as the pattern every
+  future page follows for talking to the backend.
+- Git-based, PowerShell, zip-per-batch delivery workflow (see CLAUDE.md).
+- Per-session summary in this file; no separate auto-generated commit log.
+
+**What got built:**
+- `frontend/js/config.js`, `frontend/js/api-client.js` — shared API client.
+- `Log_In__Light_.html` — wired to `POST /v1/auth/login`; redirects to
+  `Dashboard__Light_.html` on success; redirects away if already logged in.
+- `sign-up.html` — wired existing form (already had client-side password
+  strength / validation JS) to `POST /v1/auth/signup` then auto-login.
+- `Forgot_Password__Light_.html` — wired to `POST /v1/auth/forgot-password`;
+  added a "check your inbox" success state (the design only had the
+  request step).
+- `reset-password.html` — **new page, not in the original designs.** The
+  backend needs something at this path to complete the password-reset
+  flow (see `.env` `FRONTEND_BASE_URL`), so this was built from scratch,
+  matching Forgot Password's visual style. Reads `?token=` from the URL,
+  calls `POST /v1/auth/reset-password`.
+- `backend/.env` — filled in with the API keys provided in chat, plus dev
+  defaults for Mongo/Redis/JWT/CORS. No email provider key yet (see
+  CLAUDE.md note on this).
+- `CLAUDE.md` — filled in Project basics, Shell/environment, Delivery
+  workflow, History tracking sections.
+
+**Known gaps / next batch candidates:**
+- `Dashboard__Light_.html` and every other page (Flight Setup, Active
+  Flight, POI Detail, Favorites, Flight Journal, Offline Downloads,
+  Settings, GDPR & Data, session-history, session-replay, share-view,
+  Aloft Landing Page, 404, Privacy Policy, Terms of Service) are **not
+  wired yet** — still static mockups with placeholder content.
+- No route guard yet (a page that requires login doesn't currently
+  redirect an unauthenticated visitor to Log In — `AloftAuth.isLoggedIn()`
+  exists in `api-client.js` and is ready to use for this).
+- No global nav/logout wiring yet.
+- Backend has not been run/tested locally this session (no MongoDB/Redis
+  instance was available in the sandbox this work was done in) — the auth
+  wiring is correct against the router code read directly, but hasn't
+  been smoke-tested end to end. First thing to do next session: actually
+  run it and click through signup → login → forgot password → reset.
+- Not yet deployed anywhere (Render deploy was explicitly deferred until
+  after more of the frontend is wired).
+
+---
+
+## 2026-09-10 — Session 2: moved off local Docker Mongo/Redis, started Render deploy
+
+**Context:** local testing hit a snag (uvicorn/Docker weren't actually
+running when the browser tried to log in — "could not reach the Aloft
+server"). Rather than debug the local Docker setup, the project owner
+decided to skip local testing entirely and test on the live web via
+Render instead.
+
+**What happened:**
+- Project owner created a free MongoDB Atlas (M0) cluster and a free
+  Redis Cloud instance, and provided the real connection strings.
+- `backend/.env` updated locally with those hosted credentials (Atlas +
+  Redis Cloud) instead of the local docker-compose services. Also
+  corrected `FRONTEND_BASE_URL`/`CORS_ALLOWED_ORIGINS` to the `:5500`
+  convention (the file Claude received this session had `:3000`, which
+  doesn't match the rest of the project).
+- CLAUDE.md updated with the hosted-DB and in-progress-Render-deploy
+  conventions.
+- Claude gave step-by-step instructions (not yet confirmed done) for:
+  1. Render Web Service for `backend/` (free plan, root dir `backend`)
+  2. Render Static Site for `frontend/` (free plan, root dir `frontend`)
+  3. Setting production env vars in the Render dashboard (never in
+     `render.yaml` — that file has no secrets and stays that way)
+
+**Still waiting on:** the actual Render URLs for both services. Once
+those exist:
+- `frontend/js/config.js` → `ALOFT_API_BASE` needs to change from
+  `http://localhost:8000` to the live backend URL.
+- The Render backend's `CORS_ALLOWED_ORIGINS` and `FRONTEND_BASE_URL`
+  env vars need to be set to the live frontend URL (production refuses
+  to start with `CORS_ALLOWED_ORIGINS=["*"]`).
+- Suggested naming the two Render services `aloft-backend` and
+  `aloft-frontend` so the URLs are predictable
+  (`https://aloft-backend.onrender.com`, etc.) — not yet confirmed those
+  names were actually used.
+
+**Next session should start by asking:** "What are your two Render
+URLs?" if they weren't provided by the end of this session.
+
+---
+
+## 2026-09-10 — Session 3: live URLs wired up
+
+Render services are live:
+- Backend: https://aloft-backend-6rfm.onrender.com
+- Frontend: https://aloft-frontend-b64d.onrender.com
+
+**What got built:**
+- `frontend/js/config.js` → `ALOFT_API_BASE` now points at the live
+  backend URL instead of `localhost:8000`.
+- CLAUDE.md updated with the real URLs (was previously a guess based on
+  predictable naming — actual names have random suffixes, `-6rfm` /
+  `-b64d`, since the plain names were likely taken).
+
+**Still needs doing (told to the project owner, not yet confirmed done):**
+- On the Render **backend** service's dashboard, set/update:
+  - `CORS_ALLOWED_ORIGINS=["https://aloft-frontend-b64d.onrender.com"]`
+  - `FRONTEND_BASE_URL=https://aloft-frontend-b64d.onrender.com`
+  (These were sent as a guess with placeholder names in session 2 — they
+  need correcting to the real `-b64d` URL or the backend will either
+  refuse CORS requests from the real frontend, or refuse to boot at all
+  if still set to a wildcard.)
+- First real end-to-end test of the deployed app hasn't happened yet:
+  sign up → login → forgot password (reset link will be in Render's log
+  viewer, not an email) → reset password.
+- Remember free-tier cold starts: first request after 15 min idle takes
+  ~30-60s — don't mistake that for a failure mid-test.
+
+**Next session should start by asking:** did the live signup/login test
+work? If not, get the exact error message/screenshot before assuming
+where the problem is (candidates in order of likelihood: `CORS_ALLOWED_ORIGINS`
+still pointing at the wrong/placeholder frontend URL, or the backend
+still spinning up from a cold start).
+
+---
+
+## 2026-09-12 — Session 4: fixed the 502 (two real bugs, not config)
+
+Live test hit `HTTP ERROR 502` on the backend URL directly, and the
+frontend's signup form showed "Could not reach the Aloft server." Traced
+to two actual code bugs in the repo (as inherited, not introduced this
+session) rather than a config mistake:
+
+1. **`gunicorn.conf.py` hardcoded `bind = "0.0.0.0:8000"`.** Render
+   assigns the listening port dynamically via `$PORT` and routes traffic
+   to *that* port — a hardcoded bind means Render's proxy can never
+   reach the app, full stop, regardless of whether the app itself is
+   healthy. Fixed to `bind = f"0.0.0.0:{os.getenv('PORT', '8000')}"`.
+2. **`ENVIRONMENT=production` makes the app refuse to boot without R2 +
+   an email provider configured** (`config_validation.py` — hard error,
+   not a warning, specifically gated on `environment == "production"`).
+   Neither is set up yet. Since the goal right now is just testing auth,
+   not audio or real emails, the pragmatic fix is to run the Render
+   backend with **`ENVIRONMENT=staging`** instead of `production` until
+   R2 + an email provider get added in a later batch. `staging` skips
+   only those two checks — nothing else about behavior changes.
+
+**Told to the project owner, not yet confirmed done:** on the Render
+backend dashboard, change `ENVIRONMENT` from `production` to `staging`,
+and redeploy after pushing the `gunicorn.conf.py` fix.
+
+**Next session should start by asking:** did signup/login work this
+time? If a 502 still happens after both fixes are live, next things to
+check: Render's Logs tab for the backend (an actual Python traceback
+should appear now instead of a silent proxy failure), and whether the
+Atlas/Redis Cloud credentials are still valid (e.g. Atlas free clusters
+can pause after inactivity on some plans).
+
+---
+
+## 2026-09-12 — Session 5: fixed Mongo auth (real cause of the 502)
+
+Session 4's port + `staging` fixes worked — Render logs then showed a
+real error instead of a silent proxy failure:
+`pymongo.errors.OperationFailure: bad auth : Authentication failed.`
+
+Root cause: the `MONGODB_URI` from session 2
+(`Joshuaminasetsegaye:9UvPqxRzeVVFyXKe@...`) didn't correspond to any
+actual database user in Atlas — checked Database Access and found two
+different real users (`new_user`, `zemexasma_db_user`), neither matching
+what was in `.env`. Likely that connection string was copied from a
+draft/example before the real database user was created, and never
+updated.
+
+**Fix:** reset the password on the existing `zemexasma_db_user` (role:
+`atlasAdmin@admin`, which is more than strictly needed but fine for now)
+and rebuilt the connection string:
+`mongodb+srv://zemexasma_db_user:<new password>@cluster0.yyvvozu.mongodb.net/?appName=Cluster0`
+
+Updated locally in `backend/.env`. **Still needs doing:** paste the
+corrected `MONGODB_URI` into the Render backend's Environment tab (this
+is a dashboard-only change — no git push needed, Render redeploys
+automatically on env var save).
+
+**Next session should start by asking:** did signup/login work after
+this Mongo fix? If yes, this closes out the "get auth live on Render"
+arc from sessions 2-5 — next natural batch is wiring the Dashboard page
+and adding a login-required route guard (see session 1's "known gaps").
+If it still fails, check Render logs again for a *different* error than
+the Mongo one (Redis Cloud auth could have the same class of problem,
+for instance).

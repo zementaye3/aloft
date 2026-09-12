@@ -1,0 +1,158 @@
+version: '3.8'
+
+# IMPORTANT: Copy .env.docker to .env and fill in the required values before running
+# Required: MONGO_USERNAME and MONGO_PASSWORD (generate strong passwords)
+# Optional: API keys for external services
+
+services:
+  # MongoDB - local development database
+  mongodb:
+    image: mongo:7.0
+    container_name: aloft-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: aloft
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - aloft-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis - local development cache and rate limiting
+  redis:
+    image: redis:7-alpine
+    container_name: aloft-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - aloft-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aloft-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # Environment
+      ENVIRONMENT: development
+      LOG_LEVEL: INFO
+      
+      # Database - connects to local MongoDB service
+      MONGODB_URI: mongodb://mongodb:27017/aloft
+      MONGODB_DB_NAME: aloft
+      
+      # Redis - connects to local Redis service
+      REDIS_URL: redis://redis:6379/0
+      
+      # CORS - allow all origins for development
+      CORS_ALLOWED_ORIGINS: '["*"]'
+      
+      # JWT - development secret (CHANGE THIS IN PRODUCTION)
+      # Generate with: python -c "import secrets; print(secrets.token_hex(32))"
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-me-in-production-use-secrets-token-hex-32}
+      
+      # API Keys - set these in .env file or environment
+      # GROQ_API_KEY: your_groq_api_key_here
+      # ELEVENLABS_API_KEY: your_elevenlabs_api_key_here
+      # AVIATIONSTACK_API_KEY: your_aviationstack_api_key_here
+      
+      # Optional: Cloudflare R2 for audio storage
+      # R2_ACCOUNT_ID: your_r2_account_id
+      # R2_ACCESS_KEY_ID: your_r2_access_key_id
+      # R2_SECRET_ACCESS_KEY: your_r2_secret_access_key
+      # R2_BUCKET_NAME: your_r2_bucket_name
+      
+      # Optional: GeoNames for POI data
+      # GEONAMES_USERNAME: your_geonames_username
+      
+      # Optional: OpenSky Network for live aircraft positions
+      # OPENSKY_USERNAME: your_opensky_username
+      # OPENSKY_PASSWORD: your_opensky_password
+      
+      # Optional: Openverse for image fallback
+      # OPENVERSE_CLIENT_ID: your_openverse_client_id
+      # OPENVERSE_CLIENT_SECRET: your_openverse_client_secret
+      
+      # POI source feature flags
+      POI_SOURCE_WIKIDATA_ENABLED: "false"
+      POI_SOURCE_GEONAMES_ENABLED: "false"
+      POI_SOURCE_OVERPASS_ENABLED: "false"
+      
+      # Contact email
+      APP_CONTACT_EMAIL: dev@aloft.app
+      
+      # Rate limits (development defaults)
+      RATE_LIMIT_FLIGHT_LOOKUPS_PER_HOUR: 10
+      RATE_LIMIT_CONTENT_GENERATION_PER_HOUR: 20
+      RATE_LIMIT_POSITION_UPDATES_PER_MINUTE: 600
+      RATE_LIMIT_POI_DISCOVERY_PER_HOUR: 30
+      RATE_LIMIT_STORY_GENERATION_PER_HOUR: 50
+      RATE_LIMIT_AUDIO_SYNTHESIS_PER_HOUR: 30
+      RATE_LIMIT_DOWNLOADS_PER_HOUR: 10
+      RATE_LIMIT_SESSION_CREATION_PER_HOUR: 20
+      RATE_LIMIT_MIXED_AUDIO_PER_HOUR: 15
+      RATE_LIMIT_IMAGE_RETRIEVAL_PER_HOUR: 40
+      
+      # Account lockout settings
+      MAX_FAILED_LOGIN_ATTEMPTS: 5
+      ACCOUNT_LOCKOUT_DURATION_MINUTES: 30
+      
+      # Content generation settings
+      CONTENT_GENERATION_MAX_CONCURRENT: 3
+      SESSION_TTL_SECONDS: 43200
+      CORRIDOR_WIDTH_KM: 100.0
+      
+      # TTS settings
+      ELEVENLABS_VOICE_ID: EXAVITQu4vr4xnSDxMaL
+      GROQ_MODEL: llama-3.3-70b-versatile
+      
+      # Audio storage
+      AUDIO_STORAGE_DIR: ./audio_storage
+      
+      # Gunicorn worker settings (override if needed)
+      # LOG_LEVEL: info
+    volumes:
+      - ./audio_storage:/app/audio_storage
+      - ./app:/app/app  # Mount app directory for hot-reload in development
+    networks:
+      - aloft-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  aloft-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local
+  redis_data:
+    driver: local

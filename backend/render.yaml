@@ -1,0 +1,61 @@
+# Render deployment configuration for ALOFT Backend
+# https://render.com/docs/yaml-spec
+
+services:
+  # Web Service - FastAPI Backend
+  - type: web
+    name: aloft-backend
+    env: python
+    region: oregon  # Choose your preferred region
+    plan: free  # Upgrade to starter/pro for production
+    
+    # Build configuration
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    startCommand: gunicorn app.main:app --config gunicorn.conf.py
+    
+    # Environment variables (set these in Render dashboard or via CLI)
+    # Required:
+    # - ENVIRONMENT: production
+    # - MONGODB_URI: your MongoDB Atlas connection string
+    # - REDIS_URL: your Redis Cloud connection string
+    # - JWT_SECRET_KEY: generate with: python -c "import secrets; print(secrets.token_hex(32))"
+    # - GROQ_API_KEY: your Groq API key
+    # - ELEVENLABS_API_KEY: your ElevenLabs API key
+    # - AVIATIONSTACK_API_KEY: your AviationStack API key
+    # - CORS_ALLOWED_ORIGINS: your frontend domain(s), e.g., ["https://aloft.app"] (REQUIRED - app will not start with wildcard)
+    
+    # Optional but recommended for production:
+    # - R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME
+    # - LOG_LEVEL: INFO
+    
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: PYTHONUNBUFFERED
+        value: "true"
+      - key: PYTHONDONTWRITEBYTECODE
+        value: "true"
+    
+    # Health check
+    healthCheckPath: /health
+    
+    # Auto-deploy on git push
+    autoDeploy: true
+    
+    # Instance configuration
+    numInstances: 1  # Increase for production based on traffic
+    
+    # Disk storage (for audio files if not using R2)
+    # disk:
+    #   name: audio-storage
+    #   mountPath: /app/audio_storage
+    #   sizeGB: 10
+
+# Optional: Redis instance if you want Render-managed Redis
+# databases:
+#   - name: aloft-redis
+#     databaseName: aloft
+#     user: aloft
+#     plan: free  # Upgrade to production plan for better performance
