@@ -15,17 +15,23 @@ assumption for an hour.
 
 ## Project basics
 
-- **Repo:** https://github.com/zementaye/aloft (git-based project)
+- **Repo:** https://github.com/zementaye3/aloft (git-based project).
+  Moved from the original https://github.com/zementaye/aloft on
+  2026-09-15 (new GitHub account, `zementaye3`) — history was pushed
+  fresh to the new repo as a single commit; treat `zementaye/aloft` as
+  stale/no longer used.
 - **Structure:** monorepo — `backend/` (FastAPI, Python 3.12) and
   `frontend/` (static HTML/CSS/vanilla JS pages, no build step, no
   framework) at the repo root.
-- **Hosting/deployment:** live on Render (free tier), as of session 3:
-  - Backend (Web Service, root dir `backend/`): https://aloft-backend-6rfm.onrender.com
-  - Frontend (Static Site, root dir `frontend/`): https://aloft-frontend-b64d.onrender.com
-  - Both spin down after 15 min of inactivity on the free plan and take
-    ~30-60s to wake up on the next request — that's normal, not broken.
-  - MongoDB Atlas (free M0) and Redis Cloud (free) are the databases,
-    for both local dev and Render — see "Other conventions" below.
+- **Hosting/deployment:** NOT live on Render yet, despite what earlier
+  session log entries said (those were unconfirmed/aspirational — no
+  Render service actually existed). As of 2026-09-15, in progress:
+  MongoDB Atlas (free M0) is fully set up and confirmed (real cluster,
+  real database user, network access opened for 0.0.0.0/0, connection
+  string verified) — see "Other conventions" below for the actual value.
+  Redis Cloud, Groq, ElevenLabs, and AeroDataBox/AviationStack are not
+  yet set up. Render Web Service (backend) + Static Site (frontend)
+  have not yet been created.
 - **Stack:**
   - Backend: FastAPI + Motor (MongoDB async driver) + Redis, JWT auth,
     Groq (LLM narration text), ElevenLabs (TTS), AviationStack +
@@ -92,6 +98,18 @@ Rules for this flow:
   in the zip for the person to copy into place locally, but it will never
   show up in `git status` / get committed. That's expected, not a bug —
   don't "fix" it by un-ignoring it.
+- **`origin`'s push URL currently has a GitHub personal access token
+  embedded in it** (`https://<token>@github.com/zementaye3/aloft.git`),
+  set locally on 2026-09-15 so that plain `git push` works without
+  touching the separate `zementaye` account's credentials cached on this
+  machine (the project owner uses that other account for a different,
+  unrelated project on the same computer). This means `git remote -v`
+  on this machine will show a token in the URL — that's expected and
+  local-only (never committed, `.git/config` isn't tracked), not a leak
+  via git itself. If the token ever needs rotating, regenerate it on
+  GitHub (Settings > Developer settings > Fine-grained tokens, scoped to
+  just this repo, Contents: Read and write) and re-run
+  `git remote set-url origin "https://<new-token>@github.com/zementaye3/aloft.git"`.
 
 ## History tracking
 
@@ -137,23 +155,26 @@ rulebook; `docs/SESSION_LOG.md` is the history.
   reset-password flow locally right now. Ask the project owner which
   provider (Resend or SendGrid) they want before wiring real email
   sending.
-- **Database/cache are hosted, not local Docker.** The project owner set
-  up a free MongoDB Atlas cluster (M0) and a free Redis Cloud instance
-  instead of using `backend/docker-compose.yml`'s local `mongodb`/`redis`
-  services. `backend/.env`'s `MONGODB_URI` and `REDIS_URL` point at those
-  hosted instances for local runs too — there's no need to
-  `docker compose up` Mongo/Redis anymore. The `docker-compose.yml` file
-  is left in the repo in case that's ever useful again, but it's not part
-  of the current workflow.
-- **Deploying to Render — live.** Backend:
-  https://aloft-backend-6rfm.onrender.com (Web Service, root dir
-  `backend/`, free plan). Frontend:
-  https://aloft-frontend-b64d.onrender.com (Static Site, root dir
-  `frontend/`, free plan). `frontend/js/config.js`'s `ALOFT_API_BASE`
-  points at the live backend URL now (not `localhost`). The backend's
-  Render dashboard env vars `CORS_ALLOWED_ORIGINS` and `FRONTEND_BASE_URL`
-  must be set to the live frontend URL above — set directly in the Render
-  dashboard, never in `render.yaml` (no secrets/URLs get committed there).
+- **Database/cache are hosted, not local Docker.** MongoDB Atlas (free
+  M0) is set up and confirmed as of 2026-09-15: database user
+  `ztaye2003_db_user`, database name `aloft`, cluster
+  `cluster0.a4ar0q5.mongodb.net`, Network Access includes `0.0.0.0/0`
+  (needed for Render to reach it, since Render's outbound IPs aren't
+  static on the free plan) alongside the project owner's own IP. Redis
+  Cloud has not been set up yet (optional infra — the app degrades
+  gracefully without it, only the content-generation worker needs it).
+  `backend/docker-compose.yml`'s local `mongodb`/`redis` services are not
+  part of the current workflow.
+- **Render deployment — in progress, not live.** Backend Web Service and
+  frontend Static Site have not been created yet. Plan: backend as a Web
+  Service (root dir `backend/`, Docker runtime, free plan) with env vars
+  `MONGODB_URI`, `MONGODB_DB_NAME`, `JWT_SECRET_KEY`, `ENVIRONMENT=staging`
+  set directly in the Render dashboard (never in `render.yaml`, which
+  stays secret-free); `CORS_ALLOWED_ORIGINS` left unset initially (it
+  defaults to `["*"]` in code, which only hard-fails boot when
+  `ENVIRONMENT=production` — staging tolerates it) until the frontend's
+  real URL exists, then it gets locked down. Frontend as a Static Site
+  (root dir `frontend/`, no build command, publish directory `.`).
 - **No R2 configured yet** — `ENVIRONMENT=production` makes the app
   **refuse to start at all** without R2 (`R2_ACCOUNT_ID`,
   `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`) and
