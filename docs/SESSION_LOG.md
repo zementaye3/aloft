@@ -275,3 +275,21 @@ AeroDataBox/AviationStack setup (per the project owner's "let's set
 everything up now" request) are also still outstanding — auth doesn't
 need them, but narration/TTS/flight-lookups won't work until they're
 added as Render env vars.
+
+**Frontend deployed, both URLs now real:**
+- Backend: https://aloft-backend-oskd.onrender.com
+- Frontend: https://aloft-frontend-xiv1.onrender.com
+
+`frontend/js/config.js`'s `ALOFT_API_BASE` was still pointing at the old
+aspirational URL (`aloft-backend-6rfm.onrender.com`) left over from the
+fictional session-log entries — updated to the real backend URL above.
+
+**Still needs doing:** on the Render backend dashboard, set
+`CORS_ALLOWED_ORIGINS=["https://aloft-frontend-xiv1.onrender.com"]` and
+`FRONTEND_BASE_URL=https://aloft-frontend-xiv1.onrender.com` (dashboard
+only, no git push needed — Render redeploys automatically on env var
+save). Until that's done, the live frontend calling the live backend may
+hit CORS rejections even though both services are individually healthy.
+After that, do the real end-to-end smoke test: sign up -> login -> forgot
+password (reset link will be in the backend's Render Logs tab, no email
+provider configured yet) -> reset password.

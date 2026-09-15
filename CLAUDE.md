@@ -23,15 +23,21 @@ assumption for an hour.
 - **Structure:** monorepo — `backend/` (FastAPI, Python 3.12) and
   `frontend/` (static HTML/CSS/vanilla JS pages, no build step, no
   framework) at the repo root.
-- **Hosting/deployment:** NOT live on Render yet, despite what earlier
-  session log entries said (those were unconfirmed/aspirational — no
-  Render service actually existed). As of 2026-09-15, in progress:
-  MongoDB Atlas (free M0) is fully set up and confirmed (real cluster,
-  real database user, network access opened for 0.0.0.0/0, connection
-  string verified) — see "Other conventions" below for the actual value.
-  Redis Cloud, Groq, ElevenLabs, and AeroDataBox/AviationStack are not
-  yet set up. Render Web Service (backend) + Static Site (frontend)
-  have not yet been created.
+- **Hosting/deployment:** live on Render as of 2026-09-15, confirmed for
+  real this time (not the aspirational entries from the old session log —
+  those described a deployment that never actually existed):
+  - Backend (Web Service, root dir `backend/`, Docker runtime, free
+    plan): https://aloft-backend-oskd.onrender.com — confirmed live via
+    `/health` and `/health/ready` both returning real 200s with
+    `"mongodb":"ok"`.
+  - Frontend (Static Site, root dir `frontend/`, no build command,
+    publish directory `.`, free): https://aloft-frontend-xiv1.onrender.com
+  - MongoDB Atlas (free M0) is fully set up and confirmed (real cluster,
+    real database user, network access opened for 0.0.0.0/0, connection
+    string verified) — see "Other conventions" below for the actual value.
+  - Redis Cloud, Groq, ElevenLabs, and AeroDataBox/AviationStack are not
+    yet set up — auth works without them, but narration/TTS/flight
+    lookups won't until they're added.
 - **Stack:**
   - Backend: FastAPI + Motor (MongoDB async driver) + Redis, JWT auth,
     Groq (LLM narration text), ElevenLabs (TTS), AviationStack +
@@ -59,10 +65,10 @@ assumption for an hour.
 - **Shell:** Windows **PowerShell** (not bash, not WSL). Every command
   Claude gives for local execution must be real PowerShell syntax —
   `Expand-Archive` / `Copy-Item` / `Remove-Item`, not `unzip` / `cp` / `rm`.
-- **Downloads folder:** not yet confirmed as a specific path — ask if a
-  delivery script needs to reference it directly. So far, delivery scripts
-  are written to be run *from inside the project folder* (the person `cd`s
-  there first), which avoids needing to know the exact path.
+- **Downloads folder:** confirmed as `D:\Chrome_Downloads` (not the
+  default `C:\Users\HP\Downloads` — Chrome is configured to save
+  elsewhere on this machine). Delivery scripts can reference this path
+  directly now instead of only running from inside the project folder.
 - If Claude is ever unsure which shell is in play (e.g. the person
   switches machines), ask rather than guessing from the last-known answer.
 
@@ -165,16 +171,22 @@ rulebook; `docs/SESSION_LOG.md` is the history.
   gracefully without it, only the content-generation worker needs it).
   `backend/docker-compose.yml`'s local `mongodb`/`redis` services are not
   part of the current workflow.
-- **Render deployment — in progress, not live.** Backend Web Service and
-  frontend Static Site have not been created yet. Plan: backend as a Web
-  Service (root dir `backend/`, Docker runtime, free plan) with env vars
-  `MONGODB_URI`, `MONGODB_DB_NAME`, `JWT_SECRET_KEY`, `ENVIRONMENT=staging`
-  set directly in the Render dashboard (never in `render.yaml`, which
-  stays secret-free); `CORS_ALLOWED_ORIGINS` left unset initially (it
-  defaults to `["*"]` in code, which only hard-fails boot when
-  `ENVIRONMENT=production` — staging tolerates it) until the frontend's
-  real URL exists, then it gets locked down. Frontend as a Static Site
-  (root dir `frontend/`, no build command, publish directory `.`).
+- **Deploying to Render — live.** Backend:
+  https://aloft-backend-oskd.onrender.com (Web Service, root dir
+  `backend/`, Docker runtime, free plan). Frontend:
+  https://aloft-frontend-xiv1.onrender.com (Static Site, root dir
+  `frontend/`, no build command, publish directory `.`, free).
+  `frontend/js/config.js`'s `ALOFT_API_BASE` points at the live backend
+  URL. Backend env vars set in the Render dashboard (never in
+  `render.yaml`): `MONGODB_URI`, `MONGODB_DB_NAME`, `JWT_SECRET_KEY`,
+  `ENVIRONMENT=staging`. `CORS_ALLOWED_ORIGINS` and `FRONTEND_BASE_URL`
+  need to be set to the live frontend URL above (see "Still needs doing"
+  in the session log) — until that's done, cross-origin requests from the
+  real frontend may be rejected even though the backend itself is healthy.
+  Gunicorn workers are capped via `WEB_CONCURRENCY` (defaults to 2, but
+  Render's own platform currently sets `WEB_CONCURRENCY=1` for this
+  instance size automatically) — see the OOM bug entry in the session log
+  for why this matters; don't revert to a CPU-count-based formula.
 - **No R2 configured yet** — `ENVIRONMENT=production` makes the app
   **refuse to start at all** without R2 (`R2_ACCOUNT_ID`,
   `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`) and
