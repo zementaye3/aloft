@@ -2,14 +2,13 @@
 Gunicorn configuration for ALOFT Backend production deployment.
 
 Uses Uvicorn workers for async FastAPI support with sensible defaults:
-- Worker count based on CPU cores (2x cores + 1)
+- Worker count set explicitly via $WEB_CONCURRENCY (see below)
 - 60-second worker timeout for long-running content generation
 - Graceful shutdown with 30-second timeout
 - Request limits to prevent memory leaks
 - Production-ready logging
 """
 
-import multiprocessing
 import os
 
 # Server socket
@@ -22,8 +21,18 @@ bind = f"0.0.0.0:{os.getenv('PORT', '8000')}"
 backlog = 2048
 
 # Worker processes
-# Formula: (2 x CPU cores) + 1 is a good starting point for I/O-bound apps
-workers = (2 * multiprocessing.cpu_count()) + 1
+#
+# Previously: (2 x CPU cores) + 1, the standard formula for I/O-bound apps.
+# This is WRONG on shared-CPU PaaS hosts like Render: multiprocessing.cpu_count()
+# reads the *host* machine's core count (often 4-16+ on a shared box), not the
+# small CPU slice actually allocated to this container. On Render's free tier
+# (512MB RAM total), that formula spawned 15-20+ full Uvicorn/FastAPI worker
+# processes and the instance was OOM-killed within a minute of boot (confirmed
+# via Render's event log: "Ran out of memory (used over 512MB)"), then crash-
+# looped on every restart since the formula re-evaluates the same way every
+# time. Fixed to an explicit, small default that fits comfortably in 512MB,
+# overridable via $WEB_CONCURRENCY for bigger plans without another code change.
+workers = int(os.getenv("WEB_CONCURRENCY", "2"))
 worker_class = "uvicorn.workers.UvicornWorker"
 worker_connections = 1000
 max_requests = 1000  # Restart workers after 1000 requests to prevent memory leaks

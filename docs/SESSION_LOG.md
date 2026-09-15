@@ -206,3 +206,72 @@ and adding a login-required route guard (see session 1's "known gaps").
 If it still fails, check Render logs again for a *different* error than
 the Mongo one (Redis Cloud auth could have the same class of problem,
 for instance).
+
+---
+
+## 2026-09-15 — Session 6: new GitHub account, first real Render deploy, fixed OOM crash loop
+
+**Context:** starting fresh per the project owner's explicit correction —
+Sessions 2-5's "live on Render" entries were confirmed unconfirmed/
+aspirational; no Render service had actually been created before this
+session. Also: project moved to a new GitHub account/repo this session,
+`https://github.com/zementaye3/aloft` (previously `zementaye/aloft`) —
+pushed as a fresh single commit, `origin` on the local machine uses an
+embedded fine-grained PAT (scoped to just this repo, Contents: Read and
+write) so plain `git push` works without touching the project owner's
+separate `zementaye` account credentials, which are in active use for a
+different project on the same machine.
+
+**What got set up (all confirmed with real values, not assumed from old
+docs):**
+- MongoDB Atlas (free M0): cluster `cluster0.a4ar0q5.mongodb.net`,
+  database user `ztaye2003_db_user`, database name `aloft`, Network
+  Access opened to `0.0.0.0/0` (needed since Render's free-tier outbound
+  IPs aren't static) alongside the project owner's own IP.
+- `JWT_SECRET_KEY` generated fresh (64-char hex).
+- Render Web Service created for the backend (root dir `backend/`,
+  Docker runtime, free plan), connected to the new `zementaye3/aloft`
+  repo, with `MONGODB_URI`, `MONGODB_DB_NAME`, `JWT_SECRET_KEY`, and
+  `ENVIRONMENT=staging` set in the Render dashboard.
+  `CORS_ALLOWED_ORIGINS` left unset (defaults to `["*"]` in code, which
+  only hard-fails boot under `ENVIRONMENT=production`) since no frontend
+  URL exists yet.
+- Redis Cloud, Groq, ElevenLabs, and AeroDataBox/AviationStack are still
+  not set up — deliberately deferred (see "next session" below).
+
+**Bug found and fixed (third real bug in this class, after the port and
+Mongo-auth fixes in Sessions 4-5):** first deploy showed `==> Your
+service is live` in the boot log, but both `/health` and `/health/ready`
+immediately 502'd. Render's event log showed the real cause directly:
+`Instance failed: Ran out of memory (used over 512MB) while running your
+code`, followed by a `Service recovered` / fail loop. Root cause:
+`gunicorn.conf.py` set `workers = (2 * multiprocessing.cpu_count()) + 1`
+— correct formula for a dedicated box, wrong on Render's shared-CPU free
+tier, where `cpu_count()` reads the *host's* core count (the boot log
+showed ~15-20 workers spawned) rather than the small slice actually
+allocated to the container. That many full Uvicorn/FastAPI processes
+blew through the 512MB limit within about a minute of boot every time.
+
+**Fix:** `workers` is now `int(os.getenv("WEB_CONCURRENCY", "2"))` — an
+explicit small default that fits the free tier, overridable via a
+`WEB_CONCURRENCY` env var if the plan is ever upgraded, instead of a
+formula that silently reads the wrong machine's specs.
+
+**Still needs doing (told to the project owner, not yet confirmed
+done):** push this fix and redeploy on Render; then re-check `/health`
+and `/health/ready` to confirm the backend is actually stable now (not
+just that it boots once before OOMing) — watch the Render event log for
+a few minutes after redeploy, not just the first "service is live" line.
+
+**Next session should start by asking:** did `/health/ready` come back
+successfully after the redeploy, and did it stay up (no further "Ran out
+of memory" events in Render's log)? If yes, next steps in order: create
+the frontend Static Site (root dir `frontend/`), point
+`frontend/js/config.js`'s `ALOFT_API_BASE` at the live backend URL, set
+the backend's `CORS_ALLOWED_ORIGINS`/`FRONTEND_BASE_URL` to the live
+frontend URL, then do the actual signup -> login -> forgot-password ->
+reset-password smoke test end to end. Redis Cloud, Groq, ElevenLabs, and
+AeroDataBox/AviationStack setup (per the project owner's "let's set
+everything up now" request) are also still outstanding — auth doesn't
+need them, but narration/TTS/flight-lookups won't work until they're
+added as Render env vars.
