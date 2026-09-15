@@ -293,3 +293,33 @@ hit CORS rejections even though both services are individually healthy.
 After that, do the real end-to-end smoke test: sign up -> login -> forgot
 password (reset link will be in the backend's Render Logs tab, no email
 provider configured yet) -> reset password.
+
+**End-to-end auth confirmed live and working (first time ever, verified
+not assumed):** signed up a real account
+(`ztaye2003@gmail.com`) at https://aloft-frontend-xiv1.onrender.com/sign-up.html.
+The signup -> auto-login -> redirect-to-Dashboard flow completed without
+error (confirmed by checking `frontend/sign-up.html`'s code: the redirect
+on success only fires after both the signup and login API calls resolve
+without throwing). Cross-checked directly in MongoDB Atlas: a real user
+document exists in the `aloft` database's `users` collection with a
+bcrypt-hashed password (not plaintext), `is_active`/`is_verified: true`,
+and `created_at`/`last_login_at` about 2 seconds apart, matching the
+signup-then-auto-login code path exactly.
+
+The post-login redirect to `Dashboard__Light_.html` correctly 404s -
+checked `git ls-files` and confirmed that file was never actually
+committed to the repo (only `Log_In__Light_.html`, `sign-up.html`,
+`Forgot_Password__Light_.html`, `reset-password.html`, and `index.html`
+exist under `frontend/`). This is a real gap, not a wiring bug - the
+Dashboard page (and the other 14 static designs referenced in Session
+1's original context) don't exist in this repo at all yet.
+
+**This closes the "get auth live on Render" arc from Sessions 2-6.**
+
+**Next session should start with:** building `Dashboard__Light_.html`
+from scratch (no existing static design to wire, since it was never
+added to the repo - ask the project owner whether they still have the
+original `Coded_UI.zip` designs to provide, or whether Claude should
+design it fresh) plus a login-required route guard using
+`AloftAuth.isLoggedIn()` (already in `api-client.js`) so protected pages
+redirect logged-out visitors to Log In.
