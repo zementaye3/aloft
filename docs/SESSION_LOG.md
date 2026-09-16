@@ -432,3 +432,11 @@ a real POI count? Then continue with the remaining static designs one
 batch at a time (Favorites, Flight Journal, Active Flight -- which
 "Launch Tour" should eventually lead to, POI Detail, etc.) from the same
 Coded UI folder.
+
+**Confirmed live:** tested Discover Route with airport codes ADD/NBO
+(order swapped, NBO in the departure box, ADD in arrival -- still
+resolved fine either direction). Real response: "Route found -- 6
+points of interest discovered along the way." Confirms the full chain
+works end to end on live Render infrastructure with zero paid API keys
+configured: static airport table -> corridor calculation -> POI
+curation (Wikipedia/Overpass) -> response rendered in the UI.
