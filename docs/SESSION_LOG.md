@@ -323,3 +323,49 @@ original `Coded_UI.zip` designs to provide, or whether Claude should
 design it fresh) plus a login-required route guard using
 `AloftAuth.isLoggedIn()` (already in `api-client.js`) so protected pages
 redirect logged-out visitors to Log In.
+
+**Dashboard wired (found the real design, not built from scratch):**
+the original `Dashboard__Light_.html` design was tracked down on the
+project owner's machine (`C:\Users\HP\OneDrive\Desktop\Aloft design
+figma\Coded UI\`) — a Figma export folder that also contains all 18 other
+originally-mentioned static pages, none of which had ever actually been
+copied into this repo (only the 4 auth pages + `index.html` existed in
+git). Copied `Dashboard__Light_.html` in and wired it for real:
+
+- Route guard added: redirects to `Log_In__Light_.html` if
+  `AloftAuth.isLoggedIn()` is false.
+- Greeting now shows the real logged-in user's email via `AloftApi.me()`
+  — the mockup's hardcoded "Good evening, Joshua" is gone (the backend's
+  `User` model has no display-name field, only email, so this can't be a
+  first name without adding that field later).
+- Date label is now computed from the real current date instead of a
+  hardcoded "TUESDAY, OCTOBER 24".
+- Lifetime Logs card wired to `GET /journal/stats`: Total Flights and POI
+  Discovered map directly (`total_flights`, `total_places_narrated`).
+  The mockup's third stat, "Hours Listened", has no backing field
+  anywhere in the backend (`UserStats` has no such field) — replaced
+  with "Countries Visited" (`total_countries`), which is real.
+- Upcoming Itinerary wired to `GET /flights/upcoming`: shows real
+  registered flights (currently none for any user, since there's no
+  Flight Setup page yet to register one) with a genuine empty state,
+  instead of the two hardcoded fake flights (BA 282, DL 112) the mockup
+  had.
+- Avatar replaced: was a random Unsplash stock photo of a stranger
+  hardcoded into the mockup; now a generated initial-letter avatar from
+  the real user's email.
+- "Start a Flight" sync box is left visually in place but shows an
+  explicit "not wired up yet" message on click, rather than doing
+  nothing silently — full wiring needs a Flight Setup page and the
+  `/v1/flights/discover` corridor/POI flow, out of scope for this batch.
+- Logout button added (calls `AloftApi.logout()`, redirects to Log In).
+- Nav links to Explore/Journal/Favorites left as `#` — those pages exist
+  as designs on the project owner's machine but haven't been copied into
+  the repo or wired yet.
+
+**Next session should start by asking:** does the Dashboard actually
+load correctly for a real logged-in user (email shown, stats show real
+zeros/numbers, empty-flights state renders correctly)? Then continue
+copying over and wiring the remaining static designs one batch at a time
+from `C:\Users\HP\OneDrive\Desktop\Aloft design figma\Coded UI\` — next
+candidates per the original plan: Flight Setup (needed before "Start a
+Flight" can be wired for real), then Favorites, then Flight Journal.

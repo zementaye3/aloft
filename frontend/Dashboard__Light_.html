@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aloft — Dashboard</title>
+<style>
+  :root {
+    --blue: #2159e0;
+    --ink: #14172b;
+    --gray-600: #5b6072;
+    --gray-500: #767b8c;
+    --gray-400: #9a9ea9;
+    --card-border: #ececef;
+    --page-bg: #f7f8fb;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--page-bg);
+  }
+
+  a { color: inherit; }
+
+  .page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  /* ---- Top nav ---- */
+  .topnav {
+    display: flex;
+    align-items: center;
+    height: 68px;
+  }
+
+  .brand {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-right: 48px;
+  }
+
+  .navlinks {
+    display: flex;
+    gap: 32px;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .navlinks a {
+    text-decoration: none;
+    color: var(--gray-600);
+    font-size: 15px;
+    padding-bottom: 22px;
+    position: relative;
+  }
+
+  .navlinks a.active {
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .navlinks a.active::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 3px;
+    height: 2px;
+    background: var(--ink);
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .nav-right svg { width: 19px; height: 19px; color: var(--ink); }
+
+  .nav-right img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .avatar-initial {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--blue);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .logout-link {
+    background: none;
+    border: none;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--gray-600);
+    cursor: pointer;
+    padding: 0;
+    font-family: inherit;
+  }
+
+  .logout-link:hover { color: var(--ink); }
+
+  /* ---- Greeting ---- */
+  .greeting-block {
+    margin-top: 48px;
+  }
+
+  .date-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--gray-500);
+    margin-bottom: 10px;
+  }
+
+  .greeting {
+    font-size: 44px;
+    font-weight: 800;
+    letter-spacing: -1px;
+  }
+
+  /* ---- Start a flight ---- */
+  .start-flight {
+    margin-top: 40px;
+    background: linear-gradient(120deg, #dde6fb 0%, #f4f6fb 55%, #ffffff 100%);
+    border-radius: 22px;
+    padding: 40px 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+
+  .start-flight h2 {
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 12px;
+  }
+
+  .start-flight p {
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--gray-600);
+    max-width: 420px;
+  }
+
+  .sync-box {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border-radius: 999px;
+    padding: 6px 6px 6px 20px;
+    box-shadow: 0 8px 20px rgba(20,23,43,0.06);
+    min-width: 380px;
+    flex-shrink: 0;
+  }
+
+  .sync-box svg.plane {
+    width: 16px;
+    height: 16px;
+    color: var(--gray-500);
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+
+  .sync-box input {
+    border: none;
+    outline: none;
+    flex: 1;
+    font-size: 15px;
+    color: var(--ink);
+    background: transparent;
+  }
+
+  .sync-box input::placeholder { color: #a9adb8; }
+
+  .sync-btn {
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* ---- Section headers ---- */
+  .row-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-top: 56px;
+    margin-bottom: 20px;
+  }
+
+  .row-header h3 {
+    font-size: 20px;
+    font-weight: 800;
+  }
+
+  .view-all {
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: var(--blue);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  /* ---- Main grid: itinerary + lifetime logs ---- */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .itinerary-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .flight-tile {
+    border-radius: 18px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    min-height: 190px;
+  }
+
+  .flight-tile.dark {
+    background: var(--ink);
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .flight-tile.light {
+    background: #fff;
+    border: 1px solid var(--card-border);
+  }
+
+  .flight-tile-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .status-pill {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    padding: 6px 12px;
+    border-radius: 999px;
+  }
+
+  .flight-tile.dark .status-pill {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+  }
+
+  .flight-tile.light .status-pill {
+    background: #eef0f4;
+    color: var(--gray-600);
+  }
+
+  .flight-num {
+    font-family: "SF Mono", "Roboto Mono", monospace;
+    font-size: 12.5px;
+    font-weight: 700;
+  }
+
+  .flight-tile.dark .flight-num { color: #d7d9e2; }
+  .flight-tile.light .flight-num { color: var(--gray-500); }
+
+  .route-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 10px;
+  }
+
+  .route-code {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .route-row svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  .flight-tile.dark .route-row svg { color: #9599a8; }
+  .flight-tile.light .route-row svg { color: var(--gray-400); }
+
+  .route-cities {
+    font-size: 14px;
+  }
+
+  .flight-tile.dark .route-cities { color: #b7b9c6; }
+  .flight-tile.light .route-cities { color: var(--gray-500); }
+
+  /* ---- Lifetime logs ---- */
+  .logs-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .log-card {
+    background: #fff;
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    padding: 22px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .log-card .lab {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--gray-500);
+    margin-bottom: 8px;
+  }
+
+  .log-card .val {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .log-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: #f0f1f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .log-icon.blue { background: #e5ecfd; }
+
+  .log-icon svg {
+    width: 19px;
+    height: 19px;
+    color: var(--ink);
+  }
+
+  .log-icon.blue svg { color: var(--blue); }
+
+  /* ---- Footer ---- */
+  .footer {
+    margin-top: 80px;
+    padding: 32px 0 48px;
+    border-top: 1px solid var(--card-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 26px;
+  }
+
+  .footer-links a {
+    font-size: 14.5px;
+    color: var(--gray-600);
+    text-decoration: none;
+  }
+
+  .footer .copyright {
+    font-size: 13.5px;
+    color: var(--gray-500);
+  }
+
+  @media (max-width: 900px) {
+    .navlinks { display: none; }
+    .main-grid { grid-template-columns: 1fr; }
+    .itinerary-cards { grid-template-columns: 1fr; }
+    .start-flight { flex-direction: column; align-items: flex-start; }
+    .sync-box { width: 100%; min-width: 0; }
+    .footer { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="page">
+
+    <div class="topnav">
+      <div class="brand">Aloft</div>
+      <div class="navlinks">
+        <a href="#" class="active">Dashboard</a>
+        <a href="#">Explore</a>
+        <a href="#">Journal</a>
+        <a href="#">Favorites</a>
+      </div>
+      <div class="nav-right">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="avatar-initial" id="avatarInitial">?</div>
+        <button class="logout-link" id="logoutBtn" title="Log out">Log out</button>
+      </div>
+    </div>
+
+    <div class="greeting-block">
+      <div class="date-label" id="dateLabel">&nbsp;</div>
+      <h1 class="greeting" id="greeting">Welcome back</h1>
+    </div>
+
+    <div class="start-flight">
+      <div>
+        <h2>Start a Flight</h2>
+        <p>Enter your flight number to sync real-time telemetry, spatial audio guides, and personalized point-of-interest markers for your upcoming journey.</p>
+      </div>
+      <div class="sync-box">
+        <svg class="plane" viewBox="0 0 24 24" fill="currentColor"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2.5 1.8V22l3.5-1 3.5 1v-1.2L12 19v-5.5l9 2.5z"/></svg>
+        <input type="text" id="flightNumberInput" placeholder="e.g., UA 124" />
+        <button class="sync-btn" id="syncBtn">SYNC</button>
+      </div>
+    </div>
+
+    <div class="row-header">
+      <h3>Upcoming Itinerary</h3>
+      <a href="#" class="view-all">VIEW ALL ›</a>
+    </div>
+
+    <div class="main-grid">
+      <div class="itinerary-cards" id="itineraryCards">
+        <div class="flight-tile light" style="align-items:center; justify-content:center; color: var(--gray-500); font-size: 14px;">Loading…</div>
+      </div>
+
+      <div>
+        <div class="row-header" style="margin-top:0;">
+          <h3>Lifetime Logs</h3>
+        </div>
+        <div class="logs-stack">
+          <div class="log-card">
+            <div>
+              <div class="lab">TOTAL FLIGHTS</div>
+              <div class="val" id="statTotalFlights">—</div>
+            </div>
+            <div class="log-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-8 8-4 10-2-2 2-6-8 2-2-2 10-4 8-8z"/></svg>
+            </div>
+          </div>
+          <div class="log-card">
+            <div>
+              <div class="lab">POI DISCOVERED</div>
+              <div class="val" id="statPoiDiscovered">—</div>
+            </div>
+            <div class="log-icon blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8l-2.5 6.5L8 16l2.5-6.5z"/></svg>
+            </div>
+          </div>
+          <div class="log-card">
+            <div>
+              <div class="lab">COUNTRIES VISITED</div>
+              <div class="val" id="statCountries">—</div>
+            </div>
+            <div class="log-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="brand">Aloft</div>
+      <div class="footer-links">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Support</a>
+        <a href="#">Contact</a>
+      </div>
+      <div class="copyright">© 2024 Aloft. Precision Flight Audio.</div>
+    </div>
+
+  </div>
+
+<script src="js/config.js"></script>
+<script src="js/api-client.js"></script>
+<script>
+  // Route guard: this page requires a logged-in session.
+  if (!AloftAuth.isLoggedIn()) {
+    window.location.href = 'Log_In__Light_.html';
+  }
+
+  // Dynamic date (the mockup had this hardcoded to a fixed day).
+  const dateLabelEl = document.getElementById('dateLabel');
+  const dateStr = new Date().toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric',
+  }).toUpperCase();
+  dateLabelEl.textContent = dateStr;
+
+  // Greeting + avatar initial, from the real logged-in user (email only --
+  // the backend has no display-name field, so we don't fabricate one).
+  AloftApi.me().then((user) => {
+    document.getElementById('greeting').textContent = `Welcome back, ${user.email}`;
+    document.getElementById('avatarInitial').textContent = user.email.charAt(0).toUpperCase();
+  }).catch((err) => {
+    // If /me fails (e.g. expired session past the one silent refresh),
+    // treat it like being logged out rather than showing a broken page.
+    console.error('Failed to load user profile:', err);
+    AloftAuth.clearTokens();
+    window.location.href = 'Log_In__Light_.html';
+  });
+
+  // Lifetime stats from GET /journal/stats.
+  aloftApiRequest('/journal/stats').then((stats) => {
+    document.getElementById('statTotalFlights').textContent = stats.total_flights ?? 0;
+    document.getElementById('statPoiDiscovered').textContent = stats.total_places_narrated ?? 0;
+    document.getElementById('statCountries').textContent = stats.total_countries ?? 0;
+  }).catch((err) => {
+    console.error('Failed to load stats:', err);
+  });
+
+  // Upcoming flights from GET /flights/upcoming. No fake flights shown --
+  // a real empty state if the user hasn't registered any yet.
+  aloftApiRequest('/flights/upcoming').then((data) => {
+    const flights = data.upcoming_flights || [];
+    const container = document.getElementById('itineraryCards');
+    if (flights.length === 0) {
+      container.innerHTML = `
+        <div class="flight-tile light" style="align-items:center; justify-content:center; text-align:center; color: var(--gray-500); font-size: 14px; grid-column: 1 / -1;">
+          No upcoming flights yet.<br>Use "Start a Flight" once flight setup is wired to add one.
+        </div>`;
+      return;
+    }
+    container.innerHTML = flights.slice(0, 2).map((f, i) => {
+      const dep = new Date(f.departure_time);
+      const dateLabel = dep.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+      return `
+        <div class="flight-tile ${i === 0 ? 'dark' : 'light'}">
+          <div class="flight-tile-top">
+            <span class="status-pill">${dateLabel}</span>
+            <span class="flight-num">${f.flight_iata || '—'}</span>
+          </div>
+          <div class="route-row">
+            <span class="route-code">${f.departure_iata}</span>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2.5 1.8V22l3.5-1 3.5 1v-1.2L12 19v-5.5l9 2.5z"/></svg>
+            <span class="route-code">${f.arrival_iata}</span>
+          </div>
+        </div>`;
+    }).join('');
+  }).catch((err) => {
+    console.error('Failed to load upcoming flights:', err);
+    document.getElementById('itineraryCards').innerHTML =
+      '<div class="flight-tile light" style="align-items:center; justify-content:center; color: var(--gray-500); font-size: 14px;">Could not load flights.</div>';
+  });
+
+  // "Start a Flight" isn't wired to real flight discovery yet -- that
+  // needs the Flight Setup page (not built in this repo yet), so this
+  // is an honest "not ready" message rather than doing nothing silently.
+  document.getElementById('syncBtn').addEventListener('click', () => {
+    alert('Flight setup isn\'t wired up yet -- coming in a future batch.');
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await AloftApi.logout();
+    window.location.href = 'Log_In__Light_.html';
+  });
+</script>
+</body>
+</html>
