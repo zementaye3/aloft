@@ -369,3 +369,66 @@ copying over and wiring the remaining static designs one batch at a time
 from `C:\Users\HP\OneDrive\Desktop\Aloft design figma\Coded UI\` — next
 candidates per the original plan: Flight Setup (needed before "Start a
 Flight" can be wired for real), then Favorites, then Flight Journal.
+
+---
+
+## 2026-09-16 — Session 7: Flight Setup wired (real endpoint, honest gaps)
+
+**Flight Setup copied in from `C:\Users\HP\OneDrive\Desktop\Aloft design
+figma\Coded UI\Flight_Setup__Light_.html`** and wired to the real
+`POST /v1/flights/discover` endpoint. Real findings from reading the
+endpoint's code before wiring:
+
+- It accepts either a flight number OR explicit departure/arrival IATA
+  codes + a `date` field. Flight-number resolution needs
+  `AERODATABOX_API_KEY` or `AVIATIONSTACK_API_KEY` — neither is
+  configured yet, so that path will currently fail with a real (already
+  built-in) error message suggesting the airport-code fallback.
+- The airport-code path works today with **no external API key** for
+  ~200 airports in a built-in static table (`airport_repository.py`) —
+  confirmed by reading the actual table (heavily Africa/Middle-East
+  biased — ADD, NBO, JNB, CAI, LOS, etc. are in there).
+- The `date` field is required by the request schema but is not actually
+  read anywhere downstream in `flight_resolution.py` or the discover
+  logic — confirmed by grepping for its usage. Still sent (schema
+  requires it, defaults to today), but noted in the UI/comments that it
+  currently does nothing, rather than implying it filters/matters.
+
+**Fabricated mockup content removed (not wired, deleted):**
+- "Recent & Suggestions" flight list (DL 482, BA 112) — no backend
+  concept of recent searches exists anywhere in the codebase.
+- "Audio Profile: Focus Mode" info card — no such concept exists
+  anywhere in the backend (grepped, zero matches).
+- The preview card's fabricated airline name, departure/arrival times,
+  and flight duration ("Delta Air Lines", "08:45 EST", "21:00 GMT",
+  "7h 15m") — replaced with only what the real API response actually
+  gives us (route + POI count), shown only after a real successful
+  search.
+- Fixed a copy-paste artifact: this page's nav incorrectly had "Journal"
+  marked as the active tab. Removed the false active state and made
+  "Dashboard" a real working link back (it wasn't a link at all before).
+
+**What's real now:** a toggle between flight-number search and manual
+IATA entry, a real date picker (defaults to today), a working "Discover
+Route" button that calls the live backend and shows the real POI count
+or the real error message, and a "Launch Tour" button that only appears
+after a successful discovery and honestly says tracking isn't wired up
+yet (same pattern as Dashboard's sync box).
+
+**Dashboard updated too:** the "Start a Flight" sync box now actually
+navigates to Flight Setup (carrying over the typed flight number as a
+prefill) instead of showing "not wired up yet" — that placeholder is
+gone now that Flight Setup exists for real.
+
+**Not done in this batch (flagged, not silently skipped):** the
+right-panel world map is still purely decorative SVG art, not plotted to
+real coordinates — noted directly in the UI with a small caption saying
+so, rather than presented as a real map. Building a real map is a
+separate, larger piece of work.
+
+**Next session should start by asking:** does Discover Route actually
+work end to end with a real airport-code pair (e.g. ADD -> NBO) and show
+a real POI count? Then continue with the remaining static designs one
+batch at a time (Favorites, Flight Journal, Active Flight -- which
+"Launch Tour" should eventually lead to, POI Detail, etc.) from the same
+Coded UI folder.

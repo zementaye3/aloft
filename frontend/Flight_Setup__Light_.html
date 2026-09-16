@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aloft — Flight Setup</title>
+<style>
+  :root {
+    --ink: #14172b;
+    --blue: #2159e0;
+    --gray-600: #5b6072;
+    --gray-500: #767b8c;
+    --gray-400: #9a9ea9;
+    --card-border: #ececef;
+    --page-bg: #f7f8fb;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+  }
+
+  a { color: inherit; }
+
+  .app {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ---- Left panel ---- */
+  .left-panel {
+    width: 55%;
+    background: var(--page-bg);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topnav {
+    display: flex;
+    align-items: center;
+    height: 68px;
+    padding: 0 32px;
+  }
+
+  .brand {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-right: 40px;
+  }
+
+  .navlinks {
+    display: flex;
+    gap: 26px;
+    flex: 1;
+  }
+
+  .navlinks a {
+    text-decoration: none;
+    color: var(--gray-600);
+    font-size: 15px;
+    padding-bottom: 22px;
+    position: relative;
+  }
+
+  .navlinks a.active {
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .navlinks a.active::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 3px;
+    height: 2px;
+    background: var(--ink);
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .nav-right svg { width: 18px; height: 18px; color: var(--ink); }
+
+  .nav-right img {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .avatar-initial {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--blue);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .logout-link {
+    background: none;
+    border: none;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray-600);
+    cursor: pointer;
+    padding: 0;
+    font-family: inherit;
+  }
+
+  .logout-link:hover { color: var(--ink); }
+
+  .form-wrap {
+    max-width: 576px;
+    padding: 40px 48px 40px;
+    width: 100%;
+  }
+
+  .page-title {
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: -1.3px;
+    margin-bottom: 12px;
+  }
+
+  .page-sub {
+    font-size: 16px;
+    color: var(--gray-500);
+    margin-bottom: 32px;
+  }
+
+  .search-card {
+    background: #fff;
+    border-radius: 20px;
+    border: 1px solid var(--card-border);
+    padding: 26px;
+  }
+
+  .search-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .search-card-top .label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .manual-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--blue);
+    text-decoration: none;
+  }
+
+  .manual-link svg { width: 14px; height: 14px; }
+
+  .search-input {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f4f5f8;
+    border-radius: 12px;
+    padding: 15px 16px;
+    margin-bottom: 24px;
+  }
+
+  .search-input svg {
+    width: 17px;
+    height: 17px;
+    color: var(--gray-500);
+    flex-shrink: 0;
+  }
+
+  .search-input input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 15px;
+    width: 100%;
+    color: var(--ink);
+  }
+
+  .search-input input::placeholder { color: #a9adb8; }
+
+  .recent-label {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--gray-500);
+    margin-bottom: 14px;
+  }
+
+  .flight-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 4px;
+    border-radius: 12px;
+    cursor: pointer;
+  }
+
+  .flight-option:hover { background: #f7f8fb; }
+
+  .flight-option-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .flight-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f0f1f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .flight-icon svg { width: 16px; height: 16px; color: var(--gray-600); }
+
+  .flight-option .num {
+    font-size: 17px;
+    font-weight: 800;
+  }
+
+  .flight-option .route {
+    font-size: 13.5px;
+    color: var(--gray-500);
+    margin-top: 2px;
+  }
+
+  .recent-tag {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--gray-600);
+    background: #eef0f4;
+    padding: 6px 12px;
+    border-radius: 999px;
+  }
+
+  .bottom-row {
+    display: flex;
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .info-card {
+    flex: 1;
+    background: #fff;
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .info-card .label {
+    font-size: 12.5px;
+    color: var(--gray-500);
+    margin-bottom: 6px;
+  }
+
+  .info-card .value {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .info-card svg {
+    width: 18px;
+    height: 18px;
+    color: var(--gray-500);
+    flex-shrink: 0;
+  }
+
+  /* ---- Right panel (map) ---- */
+  .right-panel {
+    width: 45%;
+    position: relative;
+    background: #e7eaf0;
+    overflow: hidden;
+  }
+
+  .right-panel svg.world {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .route-path {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .dep-dot {
+    position: absolute;
+    left: 15%;
+    top: 55%;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--ink);
+    box-shadow: 0 0 0 5px rgba(20,23,43,0.15);
+  }
+
+  .arr-dot {
+    position: absolute;
+    right: 8%;
+    top: 46%;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--blue);
+    box-shadow: 0 0 0 5px rgba(33,89,224,0.18);
+  }
+
+  .preview-card {
+    position: absolute;
+    left: 48px;
+    right: 0;
+    bottom: 0;
+    max-width: 480px;
+    background: #fff;
+    border-radius: 20px 0 0 0;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.08);
+    overflow: hidden;
+  }
+
+  .preview-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 24px 18px;
+  }
+
+  .preview-flight {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .preview-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #f0f1f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .preview-icon svg { width: 17px; height: 17px; color: var(--ink); }
+
+  .preview-flight .num {
+    font-size: 19px;
+    font-weight: 800;
+  }
+
+  .preview-flight .airline {
+    font-size: 13.5px;
+    color: var(--gray-500);
+    margin-top: 2px;
+  }
+
+  .preview-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e5ecfd;
+    color: var(--blue);
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 999px;
+  }
+
+  .preview-badge .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--blue);
+  }
+
+  .preview-strip {
+    background: var(--ink);
+    color: #fff;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .preview-strip .col {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .preview-strip .col.right { align-items: flex-end; }
+
+  .preview-strip .lab {
+    font-size: 11px;
+    color: #9ea2b5;
+    letter-spacing: 0.4px;
+    margin-bottom: 5px;
+  }
+
+  .preview-strip .time {
+    font-family: "SF Mono", "Roboto Mono", monospace;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .preview-strip .time span {
+    font-size: 12px;
+    font-weight: 600;
+    color: #9ea2b5;
+    margin-left: 3px;
+  }
+
+  .preview-strip .mid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .preview-strip .mid svg {
+    width: 16px;
+    height: 16px;
+    color: #9ea2b5;
+  }
+
+  .preview-strip .mid .dur {
+    font-family: "SF Mono", "Roboto Mono", monospace;
+    font-size: 11.5px;
+    color: #9ea2b5;
+  }
+
+  .launch-btn {
+    position: absolute;
+    right: 24px;
+    bottom: -24px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    padding: 16px 24px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+  }
+
+  .launch-btn svg { width: 16px; height: 16px; }
+
+  @media (max-width: 980px) {
+    .app { flex-direction: column; }
+    .left-panel, .right-panel { width: 100%; }
+    .right-panel { min-height: 520px; }
+    .form-wrap { padding: 32px 24px; }
+    .preview-card { left: 0; right: 0; margin: 0 16px; border-radius: 20px; }
+    .launch-btn { position: static; margin: 16px auto 0; display: flex; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="left-panel">
+    <div class="topnav">
+      <div class="brand">Aloft</div>
+      <div class="navlinks">
+        <a href="Dashboard__Light_.html">Dashboard</a>
+        <a href="#">Explore</a>
+        <a href="#">Journal</a>
+        <a href="#">Favorites</a>
+      </div>
+      <div class="nav-right">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="avatar-initial" id="avatarInitial">?</div>
+        <button class="logout-link" id="logoutBtn" title="Log out">Log out</button>
+      </div>
+    </div>
+
+    <div class="form-wrap">
+      <h1 class="page-title">Flight Setup</h1>
+      <p class="page-sub">Enter your flight details to initialize the audio environment.</p>
+
+      <div class="search-card">
+        <div class="search-card-top">
+          <span class="label" id="searchModeLabel">Search Flight</span>
+          <a href="#" class="manual-link" id="manualToggle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+            <span id="manualToggleLabel">Manual IATA</span>
+          </a>
+        </div>
+
+        <div class="search-input" id="flightNumberRow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="flightNumberInput" placeholder="e.g. DL123, BA 001" />
+        </div>
+
+        <div class="search-input" id="depCodeRow" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="depCodeInput" placeholder="Departure IATA, e.g. ADD" maxlength="3" style="text-transform:uppercase;" />
+        </div>
+        <div class="search-input" id="arrCodeRow" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="arrCodeInput" placeholder="Arrival IATA, e.g. NBO" maxlength="3" style="text-transform:uppercase;" />
+        </div>
+
+        <p id="setupNote" style="font-size:12.5px; color: var(--gray-500); margin: -6px 0 18px;">
+          Flight-number lookup needs AviationStack/AeroDataBox, which
+          aren't configured yet on this deployment — it may fail. Manual
+          IATA codes work now for ~200 built-in airports without any
+          external API key.
+        </p>
+
+        <button class="manual-link" id="discoverBtn" style="background: var(--ink); color: #fff; padding: 12px 20px; border-radius: 10px; border: none; cursor: pointer; font-size: 14px;">
+          Discover Route
+        </button>
+
+        <div id="discoverResult" style="margin-top: 18px; font-size: 14px; color: var(--gray-600);"></div>
+      </div>
+
+      <div class="bottom-row">
+        <div class="info-card">
+          <div>
+            <div class="label">Date</div>
+            <input type="date" id="flightDateInput" class="value" style="border:none; font: inherit; font-weight:700; background:transparent; color: var(--ink); width: 100%;" />
+          </div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <svg class="world" viewBox="0 0 700 700" preserveAspectRatio="xMidYMid slice">
+      <rect width="700" height="700" fill="#e7eaf0"/>
+      <g fill="#d3d7e0">
+        <path d="M40 220c20-30 60-40 90-30s40 10 60 0 50-20 80 0 20 40 0 60-60 10-90 0-70-10-100-10-60-10-40-20z"/>
+        <path d="M160 320c30-10 70 0 90 20s10 50-20 60-80 0-100-20 0-50 30-60z"/>
+        <path d="M330 150c40-20 100-10 130 10s30 50 0 70-90 20-120 0-50-60-10-80z"/>
+        <path d="M420 280c50-10 110 10 130 40s0 60-40 70-100-10-120-40 -20-60 30-70z"/>
+        <path d="M540 180c30-20 80-10 100 10s10 40-20 50-70 0-90-20 -20-30 10-40z"/>
+        <path d="M280 420c40-10 90 10 100 40s-20 50-60 50-80-20-80-50 0-30 40-40z"/>
+        <path d="M480 430c30 0 70 20 70 50s-40 40-70 30-50-30-40-50 10-30 40-30z"/>
+      </g>
+    </svg>
+    <p style="position:absolute; top:16px; left:16px; font-size:11px; color:#8b8f9c; background:rgba(255,255,255,0.7); padding:4px 8px; border-radius:6px;">
+      Decorative map -- not plotted to real coordinates yet.
+    </p>
+
+    <div id="previewCard" class="preview-card" style="display:none;">
+      <div class="preview-top">
+        <div class="preview-flight">
+          <div class="preview-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2.5 1.8V22l3.5-1 3.5 1v-1.2L12 19v-5.5l9 2.5z"/></svg>
+          </div>
+          <div>
+            <div class="num" id="previewRoute">--</div>
+            <div class="airline" id="previewPoiCount">-- POIs found</div>
+          </div>
+        </div>
+        <span class="preview-badge"><span class="dot"></span>Route found</span>
+      </div>
+    </div>
+
+    <button class="launch-btn" id="launchBtn" style="display:none;">
+      Launch Tour
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+  </div>
+
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/api-client.js"></script>
+<script>
+  if (!AloftAuth.isLoggedIn()) {
+    window.location.href = 'Log_In__Light_.html';
+  }
+
+  AloftApi.me().then((user) => {
+    document.getElementById('avatarInitial').textContent = user.email.charAt(0).toUpperCase();
+  }).catch(() => {
+    AloftAuth.clearTokens();
+    window.location.href = 'Log_In__Light_.html';
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await AloftApi.logout();
+    window.location.href = 'Log_In__Light_.html';
+  });
+
+  // Default the date picker to today (the backend accepts this field but
+  // doesn't currently use it in route/POI resolution -- confirmed by
+  // reading flight_resolution.py -- so this is here for a future use,
+  // not because it changes today's results).
+  document.getElementById('flightDateInput').value = new Date().toISOString().slice(0, 10);
+
+  // Prefill from Dashboard's "Start a Flight" box, if it sent one.
+  const params = new URLSearchParams(window.location.search);
+  const prefillFlight = params.get('flight');
+  if (prefillFlight) {
+    document.getElementById('flightNumberInput').value = prefillFlight;
+  }
+
+  // Toggle between flight-number search and manual IATA code entry.
+  let manualMode = false;
+  document.getElementById('manualToggle').addEventListener('click', (e) => {
+    e.preventDefault();
+    manualMode = !manualMode;
+    document.getElementById('flightNumberRow').style.display = manualMode ? 'none' : 'flex';
+    document.getElementById('depCodeRow').style.display = manualMode ? 'flex' : 'none';
+    document.getElementById('arrCodeRow').style.display = manualMode ? 'flex' : 'none';
+    document.getElementById('searchModeLabel').textContent = manualMode ? 'Manual Airport Codes' : 'Search Flight';
+    document.getElementById('manualToggleLabel').textContent = manualMode ? 'Search by Flight #' : 'Manual IATA';
+  });
+
+  document.getElementById('discoverBtn').addEventListener('click', async () => {
+    const resultEl = document.getElementById('discoverResult');
+    const previewCard = document.getElementById('previewCard');
+    const launchBtn = document.getElementById('launchBtn');
+    resultEl.textContent = 'Searching...';
+    previewCard.style.display = 'none';
+    launchBtn.style.display = 'none';
+
+    const body = { date: document.getElementById('flightDateInput').value };
+    if (manualMode) {
+      body.departureCode = document.getElementById('depCodeInput').value.trim().toUpperCase();
+      body.arrivalCode = document.getElementById('arrCodeInput').value.trim().toUpperCase();
+    } else {
+      body.flightNumber = document.getElementById('flightNumberInput').value.trim();
+    }
+
+    try {
+      const data = await aloftApiRequest('/v1/flights/discover', { method: 'POST', body });
+      resultEl.textContent = `Route found -- ${data.poisCount} points of interest discovered along the way.`;
+      document.getElementById('previewRoute').textContent =
+        manualMode ? `${body.departureCode} -> ${body.arrivalCode}` : body.flightNumber;
+      document.getElementById('previewPoiCount').textContent = `${data.poisCount} POIs found`;
+      previewCard.style.display = 'block';
+      launchBtn.style.display = 'inline-flex';
+    } catch (err) {
+      resultEl.textContent = err.message || 'Could not discover a route for that input.';
+    }
+  });
+
+  document.getElementById('launchBtn').addEventListener('click', () => {
+    alert('Active Flight tracking isn\'t wired up yet -- coming in a future batch.');
+  });
+</script>
+</body>
+</html>

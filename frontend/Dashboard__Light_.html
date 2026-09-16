@@ -581,11 +581,13 @@
       '<div class="flight-tile light" style="align-items:center; justify-content:center; color: var(--gray-500); font-size: 14px;">Could not load flights.</div>';
   });
 
-  // "Start a Flight" isn't wired to real flight discovery yet -- that
-  // needs the Flight Setup page (not built in this repo yet), so this
-  // is an honest "not ready" message rather than doing nothing silently.
+  // "Start a Flight" now goes to the real Flight Setup page, carrying
+  // over whatever flight number was typed here (if any) as a prefill.
   document.getElementById('syncBtn').addEventListener('click', () => {
-    alert('Flight setup isn\'t wired up yet -- coming in a future batch.');
+    const val = document.getElementById('flightNumberInput').value.trim();
+    window.location.href = val
+      ? `Flight_Setup__Light_.html?flight=${encodeURIComponent(val)}`
+      : 'Flight_Setup__Light_.html';
   });
 
   document.getElementById('logoutBtn').addEventListener('click', async () => {
