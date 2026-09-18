@@ -440,3 +440,41 @@ points of interest discovered along the way." Confirms the full chain
 works end to end on live Render infrastructure with zero paid API keys
 configured: static airport table -> corridor calculation -> POI
 curation (Wikipedia/Overpass) -> response rendered in the UI.
+
+---
+
+## 2026-09-16 — Session 8: Favorites wired, closed the save-a-POI loop
+
+**Favorites copied in from the Coded UI folder and wired to real
+`GET /favorites` and `DELETE /favorites/{poi_source_id}`.** Checked the
+actual `FavoritePlace` model first: it only has `poi_name`, `lat`, `lng`,
+`story_snippet` (optional), and `saved_at` — no photos, no flight tags,
+no categories. The original mockup was a masonry photo gallery with
+fabricated Unsplash stock photos, fake "FLT 892 / SFO APPROACH"-style
+tags, and made-up coordinates for real landmarks (Golden Gate Bridge,
+Mt. Rainier, etc.) the user never actually visited. None of that could
+be wired honestly, so it was replaced with a plain card grid showing
+only real fields, and a real client-side text search over whatever's
+loaded (dropped the Landmarks/Waypoints/Airports filter pills — no
+category field exists anywhere in the backend to filter by).
+
+**Closed a real gap:** Favorites previously had no way to ever contain
+anything, since adding one requires a `poi_source_id` and the only place
+those exist is Flight Setup's discover results (which only showed a
+count before this session). Flight Setup now lists the actual POIs
+returned by `/v1/flights/discover` (name + distance from route) with a
+working "+ Save" button that calls `POST /favorites`.
+
+**Nav links wired up where real pages now exist:** Dashboard <-> Flight
+Setup <-> Favorites all link to each other correctly now instead of `#`
+placeholders. "Explore" and "Journal" stay as `#` — no real page behind
+either yet.
+
+**Next session should start by asking:** does saving a POI from Flight
+Setup actually show up on the Favorites page afterward (full loop test:
+discover a route -> save a POI -> visit Favorites -> see it -> remove
+it -> confirm it's gone)? Then continue with the remaining static
+designs (Flight Journal, POI Detail, Active Flight, Settings, GDPR &
+Data, the two session-history/session-replay pages, share-view,
+Aloft Landing Page, 404, Privacy Policy, Terms of Service) one batch at
+a time from the same Coded UI folder.

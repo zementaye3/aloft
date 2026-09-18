@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aloft — Favorites</title>
+<style>
+  :root {
+    --ink: #14172b;
+    --gray-600: #5b6072;
+    --gray-500: #767b8c;
+    --card-border: #ececef;
+    --page-bg: #f7f8fb;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--page-bg);
+  }
+
+  a { color: inherit; }
+
+  .page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  /* ---- Top nav ---- */
+  .topnav {
+    display: flex;
+    align-items: center;
+    height: 68px;
+  }
+
+  .brand {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-right: 48px;
+  }
+
+  .navlinks {
+    display: flex;
+    gap: 32px;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .navlinks a {
+    text-decoration: none;
+    color: var(--gray-600);
+    font-size: 15px;
+    padding-bottom: 22px;
+    position: relative;
+  }
+
+  .navlinks a.active {
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .navlinks a.active::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 3px;
+    height: 2px;
+    background: var(--ink);
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .nav-right svg { width: 19px; height: 19px; color: var(--ink); }
+
+  .nav-right img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .avatar-initial {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #2159e0;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .logout-link {
+    background: none;
+    border: none;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--gray-600);
+    cursor: pointer;
+    padding: 0;
+    font-family: inherit;
+  }
+
+  .logout-link:hover { color: var(--ink); }
+
+  /* ---- Real favorites list (no images -- the backend stores no
+     photos, flight tags, or categories for a saved place, so the
+     original masonry photo-card look isn't honest to keep) ---- */
+  .fav-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .fav-card {
+    background: #fff;
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    padding: 22px;
+  }
+
+  .fav-card h3 {
+    font-size: 19px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  .fav-coords {
+    font-family: "SF Mono", "Roboto Mono", monospace;
+    font-size: 12.5px;
+    color: var(--gray-500);
+    margin-bottom: 10px;
+  }
+
+  .fav-snippet {
+    font-size: 14px;
+    color: var(--gray-600);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+
+  .fav-saved-at {
+    font-size: 12px;
+    color: var(--gray-500);
+    margin-bottom: 14px;
+  }
+
+  .fav-remove-btn {
+    background: none;
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray-600);
+    cursor: pointer;
+  }
+
+  .fav-remove-btn:hover { border-color: #d33; color: #d33; }
+
+  /* ---- Header ---- */
+  .page-title {
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    margin-top: 32px;
+    margin-bottom: 28px;
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border-radius: 999px;
+    padding: 14px 20px;
+    max-width: 384px;
+    flex: 1;
+    box-shadow: 0 1px 2px rgba(20,23,43,0.03);
+  }
+
+  .search-box svg {
+    width: 17px;
+    height: 17px;
+    color: var(--gray-500);
+    flex-shrink: 0;
+  }
+
+  .search-box input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 15px;
+    width: 100%;
+    color: var(--ink);
+  }
+
+  .search-box input::placeholder { color: #a9adb8; }
+
+  .filters {
+    display: flex;
+    gap: 10px;
+  }
+
+  .filter-pill {
+    border: 1px solid var(--card-border);
+    background: #fff;
+    padding: 11px 18px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-600);
+    cursor: pointer;
+  }
+
+  .filter-pill.active {
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+  }
+
+  /* ---- Masonry columns ---- */
+  .masonry {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .poi-card {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    color: #fff;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .poi-card img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .poi-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,0.75) 100%);
+  }
+
+  .poi-card .card-inner {
+    position: relative;
+    z-index: 1;
+    padding: 20px;
+    width: 100%;
+  }
+
+  .poi-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.22);
+    backdrop-filter: blur(6px);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    margin-bottom: 12px;
+  }
+
+  .poi-tag svg { width: 11px; height: 11px; }
+
+  .poi-card h3 {
+    font-size: 21px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+  }
+
+  .poi-coords {
+    font-family: "SF Mono", "Roboto Mono", monospace;
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.85);
+  }
+
+  .h-tall { height: 360px; }
+  .h-mid { height: 300px; }
+  .h-short { height: 254px; }
+  .h-med2 { height: 318px; }
+  .h-full { height: 680px; }
+
+  /* ---- Footer ---- */
+  .footer {
+    margin-top: 60px;
+    padding: 32px 0 48px;
+    border-top: 1px solid var(--card-border);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+
+  .footer .copyright {
+    font-size: 13.5px;
+    color: var(--gray-500);
+    margin-top: 8px;
+  }
+
+  .footer-links-group {
+    display: flex;
+    gap: 64px;
+  }
+
+  .footer-links-group a {
+    display: block;
+    font-size: 15px;
+    color: var(--gray-600);
+    text-decoration: none;
+    margin-bottom: 14px;
+  }
+
+  @media (max-width: 900px) {
+    .navlinks { display: none; }
+    .masonry { grid-template-columns: 1fr; }
+    .h-tall, .h-mid, .h-short, .h-med2, .h-full { height: 300px; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    .search-box { max-width: none; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="page">
+
+    <div class="topnav">
+      <div class="brand">Aloft</div>
+      <div class="navlinks">
+        <a href="Dashboard__Light_.html">Dashboard</a>
+        <a href="#">Explore</a>
+        <a href="#">Journal</a>
+        <a href="#" class="active">Favorites</a>
+      </div>
+      <div class="nav-right">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="avatar-initial" id="avatarInitial">?</div>
+        <button class="logout-link" id="logoutBtn" title="Log out">Log out</button>
+      </div>
+    </div>
+
+    <h1 class="page-title">Favorites</h1>
+
+    <div class="toolbar">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="searchInput" placeholder="Search saved places..." />
+      </div>
+    </div>
+
+    <div id="favContent">
+      <p style="color: var(--gray-500); font-size: 14px;">Loading...</p>
+    </div>
+
+    <div class="footer">
+      <div>
+        <div class="brand">Aloft</div>
+        <div class="copyright">© 2024 Aloft. Precision Flight Audio.</div>
+      </div>
+      <div class="footer-links-group">
+        <div>
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+        </div>
+        <div>
+          <a href="#">Support</a>
+          <a href="#">Contact</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script src="js/config.js"></script>
+<script src="js/api-client.js"></script>
+<script>
+  if (!AloftAuth.isLoggedIn()) {
+    window.location.href = 'Log_In__Light_.html';
+  }
+
+  AloftApi.me().then((user) => {
+    document.getElementById('avatarInitial').textContent = user.email.charAt(0).toUpperCase();
+  }).catch(() => {
+    AloftAuth.clearTokens();
+    window.location.href = 'Log_In__Light_.html';
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await AloftApi.logout();
+    window.location.href = 'Log_In__Light_.html';
+  });
+
+  let allFavorites = [];
+
+  function renderFavorites(favorites) {
+    const el = document.getElementById('favContent');
+    if (favorites.length === 0) {
+      el.innerHTML = `<p style="color: var(--gray-500); font-size: 15px; padding: 40px 0;">
+        No favorites saved yet. Discover a route on the Flight Setup page and save a point of interest to see it here.
+      </p>`;
+      return;
+    }
+    el.innerHTML = '<div class="fav-grid">' + favorites.map((f) => `
+      <div class="fav-card" data-poi-id="${f.poi_source_id}">
+        <h3>${f.poi_name}</h3>
+        <div class="fav-coords">N ${f.lat.toFixed(4)} / E ${f.lng.toFixed(4)}</div>
+        ${f.story_snippet ? `<div class="fav-snippet">${f.story_snippet}</div>` : ''}
+        <div class="fav-saved-at">Saved ${new Date(f.saved_at).toLocaleDateString()}</div>
+        <button class="fav-remove-btn" data-poi-id="${f.poi_source_id}">Remove</button>
+      </div>`).join('') + '</div>';
+
+    el.querySelectorAll('.fav-remove-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        btn.textContent = 'Removing...';
+        try {
+          await aloftApiRequest(`/favorites/${encodeURIComponent(btn.dataset.poiId)}`, { method: 'DELETE' });
+          allFavorites = allFavorites.filter((f) => f.poi_source_id !== btn.dataset.poiId);
+          renderFavorites(allFavorites);
+        } catch (err) {
+          btn.textContent = 'Failed';
+          btn.disabled = false;
+        }
+      });
+    });
+  }
+
+  aloftApiRequest('/favorites').then((data) => {
+    allFavorites = data.favorites || [];
+    renderFavorites(allFavorites);
+  }).catch((err) => {
+    document.getElementById('favContent').innerHTML =
+      `<p style="color: var(--gray-500); font-size: 14px;">Could not load favorites: ${err.message}</p>`;
+  });
+
+  // Real client-side search over whatever's actually loaded -- no
+  // category filters, since the backend stores no category for a
+  // favorite (the mockup's Landmarks/Waypoints/Airports pills had
+  // nothing real to filter against).
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    const filtered = q
+      ? allFavorites.filter((f) => f.poi_name.toLowerCase().includes(q))
+      : allFavorites;
+    renderFavorites(filtered);
+  });
+</script>
+</body>
+</html>
