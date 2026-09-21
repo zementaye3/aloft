@@ -679,6 +679,10 @@
   });
 
   function renderPoiList(pois) {
+    // Stored so POI_Detail can read a POI's data -- there's no
+    // single-POI or nearby-POI backend endpoint to fetch this from later.
+    sessionStorage.setItem('aloft_last_pois', JSON.stringify(pois));
+
     const listEl = document.getElementById('poiList');
     if (pois.length === 0) {
       listEl.innerHTML = '';
@@ -686,8 +690,8 @@
     }
     listEl.innerHTML = '<div class="recent-label" style="margin-top:20px;">Points of Interest Found</div>' +
       pois.map((p) => `
-        <div class="flight-option" data-poi-id="${p.id}">
-          <div class="flight-option-left">
+        <div class="flight-option" data-poi-id="${p.id}" style="cursor:pointer;">
+          <div class="flight-option-left poi-open-target" data-poi-id="${p.id}">
             <div class="flight-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
             </div>
@@ -699,8 +703,15 @@
           <button class="recent-tag save-poi-btn" style="border:none; cursor:pointer;" data-poi-id="${p.id}">+ Save</button>
         </div>`).join('');
 
+    listEl.querySelectorAll('.poi-open-target').forEach((el) => {
+      el.addEventListener('click', () => {
+        window.location.href = `POI_Detail__Light_.html?id=${encodeURIComponent(el.dataset.poiId)}`;
+      });
+    });
+
     listEl.querySelectorAll('.save-poi-btn').forEach((btn) => {
-      btn.addEventListener('click', async () => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
         btn.disabled = true;
         btn.textContent = 'Saving...';
         try {

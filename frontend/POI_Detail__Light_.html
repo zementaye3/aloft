@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>POI Detail — Aloft</title>
+<style>
+  :root {
+    --ink: #14172b;
+    --gray-600: #5b6072;
+    --gray-500: #767b8c;
+    --gray-400: #9a9ea9;
+    --card-border: #ececef;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+  }
+
+  a { color: inherit; }
+
+  /* ---- Blurred background page (context) ---- */
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    background: #eef0f6;
+    filter: blur(2px);
+    opacity: 0.7;
+    z-index: 0;
+  }
+
+  .backdrop-content {
+    padding: 40px;
+    color: var(--gray-500);
+    font-size: 13px;
+  }
+
+  .scrim {
+    position: fixed;
+    inset: 0;
+    background: rgba(20,23,43,0.25);
+    z-index: 1;
+  }
+
+  /* ---- Modal shell ---- */
+  .modal-outer {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 1200px;
+    max-height: calc(100vh - 56px);
+    background: #fff;
+    border-radius: 24px;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    overflow: hidden;
+    box-shadow: 0 40px 90px rgba(0,0,0,0.3);
+  }
+
+  .modal-main {
+    overflow-y: auto;
+    max-height: calc(100vh - 56px);
+  }
+
+  /* ---- Hero image ---- */
+  .hero-img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .main-body {
+    padding: 44px 48px 48px;
+  }
+
+  .eyebrow {
+    font-family: "SF Mono", "Roboto Mono", monospace;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--gray-500);
+    margin-bottom: 14px;
+  }
+
+  .main-body h1 {
+    font-size: 44px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1.08;
+    margin-bottom: 24px;
+  }
+
+  .main-body p {
+    font-size: 16.5px;
+    line-height: 1.7;
+    color: #2b2e42;
+    margin-bottom: 20px;
+    max-width: 620px;
+  }
+
+  .visual-refs {
+    margin-top: 36px;
+  }
+
+  .visual-refs h3 {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 18px;
+  }
+
+  .ref-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 560px;
+  }
+
+  .ref-grid img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 12px;
+  }
+
+  /* ---- Side panel ---- */
+  .side-panel {
+    border-left: 1px solid var(--card-border);
+    padding: 28px 28px 28px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    max-height: calc(100vh - 56px);
+    position: relative;
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f0f1f5;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--ink);
+  }
+
+  .close-btn svg { width: 15px; height: 15px; }
+
+  .coords-box {
+    background: var(--ink);
+    color: #fff;
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-top: 44px;
+    margin-bottom: 16px;
+  }
+
+  .coords-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+    padding-bottom: 10px;
+  }
+
+  .coords-top .lab {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    color: #9ea2b5;
+  }
+
+  .coords-top svg { width: 13px; height: 13px; color: #9ea2b5; }
+
+  .coords-box .val {
+    font-family: "SF Mono", "Roboto Mono", monospace;
+    font-size: 14.5px;
+    line-height: 1.7;
+  }
+
+  .add-route-btn {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    padding: 15px;
+    border-radius: 999px;
+    font-size: 14.5px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 12px;
+  }
+
+  .add-route-btn svg { width: 15px; height: 15px; }
+
+  .side-btn-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .side-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    background: #fff;
+    border: 1px solid var(--card-border);
+    color: var(--ink);
+    padding: 12px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .side-btn svg { width: 14px; height: 14px; }
+
+  .nearby-section {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid var(--card-border);
+  }
+
+  .nearby-label {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    color: var(--gray-500);
+    margin-bottom: 16px;
+  }
+
+  .nearby-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    cursor: pointer;
+  }
+
+  .nearby-item + .nearby-item { border-top: 1px solid var(--card-border); }
+
+  .nearby-item .name {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+
+  .nearby-item .dist {
+    font-family: "SF Mono", "Roboto Mono", monospace;
+    font-size: 12px;
+    color: var(--gray-500);
+  }
+
+  .nearby-item svg {
+    width: 15px;
+    height: 15px;
+    color: var(--gray-400);
+    flex-shrink: 0;
+  }
+
+  /* ---- Bottom audio bar ---- */
+  .audio-bar {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 3;
+    background: var(--ink);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 16px 32px;
+  }
+
+  .audio-play {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #fff;
+    color: var(--ink);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .audio-play svg { width: 15px; height: 15px; margin-left: 2px; }
+
+  .audio-meta {
+    flex-shrink: 0;
+    width: 200px;
+  }
+
+  .audio-meta .tag {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    color: #9ea2b5;
+    margin-bottom: 3px;
+  }
+
+  .audio-meta .title {
+    font-size: 14.5px;
+    font-weight: 600;
+  }
+
+  .audio-scrub {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: "SF Mono", "Roboto Mono", monospace;
+    font-size: 12px;
+    color: #9ea2b5;
+    max-width: 700px;
+  }
+
+  .scrub-track {
+    flex: 1;
+    height: 4px;
+    background: #3a3c4c;
+    border-radius: 999px;
+    position: relative;
+  }
+
+  .scrub-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 10%;
+    background: #2159e0;
+    border-radius: 999px;
+  }
+
+  .audio-icons {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-shrink: 0;
+  }
+
+  .audio-icons svg {
+    width: 19px;
+    height: 19px;
+    color: #c7c9d4;
+    cursor: pointer;
+  }
+
+  @media (max-width: 980px) {
+    .modal { grid-template-columns: 1fr; overflow-y: auto; }
+    .side-panel { border-left: none; border-top: 1px solid var(--card-border); max-height: none; }
+    .modal-main { max-height: none; }
+    .main-body { padding: 32px 24px; }
+    .main-body h1 { font-size: 32px; }
+    .audio-bar { flex-wrap: wrap; gap: 12px; padding: 14px 20px; }
+    .audio-meta { width: auto; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="backdrop"></div>
+  <div class="scrim"></div>
+
+  <div class="modal-outer">
+    <div class="modal">
+
+      <div class="modal-main">
+        <div class="main-body" style="padding-top:48px;">
+          <div class="eyebrow" id="eyebrow">WAYPOINT</div>
+          <h1 id="poiName">Loading...</h1>
+          <p id="poiMeta" style="color: var(--gray-500);"></p>
+
+          <div id="narrationSection" style="margin-top: 28px;">
+            <button class="add-route-btn" id="generateBtn" style="max-width: 260px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4"/></svg>
+              Generate Narration
+            </button>
+            <p style="font-size:13px; color: var(--gray-500); margin-top:10px; max-width:500px;">
+              Narration is generated live via Groq -- this deployment
+              doesn't have <code>GROQ_API_KEY</code> configured yet, so
+              this will likely show a real error rather than text. Once
+              Groq is set up, this becomes real generated narration text
+              (no audio playback yet -- that needs ElevenLabs, also not
+              configured).
+            </p>
+            <div id="narrationResult" style="margin-top:16px; font-size:16px; line-height:1.7; max-width:600px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-panel">
+        <button class="close-btn" aria-label="Close" id="closeBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+
+        <div class="coords-box">
+          <div class="coords-top">
+            <span class="lab">COORDINATES</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          </div>
+          <div class="val" id="coordsVal">--</div>
+        </div>
+
+        <button class="add-route-btn" id="saveBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          Save to Favorites
+        </button>
+
+        <div class="nearby-section" id="otherPoisSection" style="margin-top: 24px;">
+          <div class="nearby-label">OTHER POIS FROM THIS SEARCH</div>
+          <div id="otherPoisList"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script src="js/config.js"></script>
+<script src="js/api-client.js"></script>
+<script>
+  if (!AloftAuth.isLoggedIn()) {
+    window.location.href = 'Log_In__Light_.html';
+  }
+
+  document.getElementById('closeBtn').addEventListener('click', () => {
+    window.location.href = 'Flight_Setup__Light_.html';
+  });
+
+  // POI data isn't fetchable by ID (no such endpoint exists) -- it's
+  // passed forward from wherever it was discovered (Flight Setup),
+  // via sessionStorage, along with the sibling list for "other POIs".
+  const params = new URLSearchParams(window.location.search);
+  const poiId = params.get('id');
+  const stored = JSON.parse(sessionStorage.getItem('aloft_last_pois') || '[]');
+  const poi = stored.find((p) => p.id === poiId);
+
+  if (!poi) {
+    document.getElementById('poiName').textContent = 'POI data not available';
+    document.getElementById('poiMeta').textContent =
+      'This page needs to be opened from a Flight Setup search result -- POI data isn\'t stored permanently or fetchable by ID on its own yet.';
+    document.getElementById('narrationSection').style.display = 'none';
+    document.getElementById('saveBtn').style.display = 'none';
+  } else {
+    document.getElementById('poiName').textContent = poi.name;
+    document.getElementById('eyebrow').textContent = `WAYPOINT · ${poi.distanceFromPath.toFixed(1)} KM FROM ROUTE`;
+    document.getElementById('poiMeta').textContent = poi.description || 'No description available from this source yet.';
+    document.getElementById('coordsVal').textContent = `${poi.lat.toFixed(5)}, ${poi.lng.toFixed(5)}`;
+
+    document.getElementById('generateBtn').addEventListener('click', async () => {
+      const resultEl = document.getElementById('narrationResult');
+      resultEl.textContent = 'Generating...';
+      try {
+        const story = await aloftApiRequest(`/v1/pois/${encodeURIComponent(poi.id)}/story`, { method: 'POST' });
+        resultEl.textContent = story.text_content;
+      } catch (err) {
+        resultEl.textContent = `Could not generate narration: ${err.message}`;
+      }
+    });
+
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('saveBtn');
+      btn.disabled = true;
+      try {
+        const res = await aloftApiRequest('/favorites', {
+          method: 'POST',
+          body: { poi_source_id: poi.id },
+        });
+        btn.textContent = res.message === 'Already in favorites' ? 'Already saved' : 'Saved!';
+      } catch (err) {
+        btn.textContent = 'Failed to save';
+        btn.disabled = false;
+      }
+    });
+
+    const others = stored.filter((p) => p.id !== poi.id);
+    const listEl = document.getElementById('otherPoisList');
+    if (others.length === 0) {
+      document.getElementById('otherPoisSection').style.display = 'none';
+    } else {
+      listEl.innerHTML = others.map((p) => `
+        <div class="nearby-item" data-poi-id="${p.id}">
+          <div>
+            <div class="name">${p.name}</div>
+            <div class="dist">${p.distanceFromPath.toFixed(1)} km from route</div>
+          </div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg>
+        </div>`).join('');
+      listEl.querySelectorAll('.nearby-item').forEach((el) => {
+        el.addEventListener('click', () => {
+          window.location.href = `POI_Detail__Light_.html?id=${encodeURIComponent(el.dataset.poiId)}`;
+        });
+      });
+    }
+  }
+</script>
+</body>
+</html>

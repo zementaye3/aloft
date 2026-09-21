@@ -529,3 +529,56 @@ static pages first (POI Detail, Active Flight, Settings, GDPR & Data,
 session-history, session-replay, share-view, Aloft Landing Page, 404,
 Privacy Policy, Terms of Service)? Either is reasonable; flagging the
 choice rather than assuming.
+
+---
+
+## 2026-09-16 — Session 10: POI Detail wired against a mostly-empty real payload
+
+**Real finding before wiring:** read the actual `/v1/flights/discover`
+handler in `routers/flights.py`. Each POI in the response is built as:
+```
+{"id": ..., "name": ..., "description": "", "lat": ..., "lng": ...,
+ "country": "", "distanceFromPath": ..., "hasStory": False, "hasAudio": False}
+```
+`description` and `country` are hardcoded empty strings -- never
+populated, even though the source is Wikipedia. So the original POI
+Detail mockup (fabricated backstory paragraphs, elevation figure, three
+stock "visual reference" photos, DMS-with-seconds coordinates, a
+"Nearby Waypoints" list, and a fake audio player mid-playback at
+"00:00/04:15") had almost nothing real to build on -- only `name`,
+`lat`/`lng`, and `distanceFromPath` are genuine.
+
+**Also found:** no backend endpoint fetches a single POI by ID or looks
+up "nearby" POIs for one -- only the paginated `/pois/list` (all POIs,
+unfiltered) and the corridor-discovery endpoint exist. So POI Detail
+can't be a standalone linkable page backed by a fetch; it now receives
+its data via `sessionStorage` (`aloft_last_pois`), set by Flight Setup
+right after a discover call, and reads the specific POI by `id` from
+the URL query string. "Other POIs from this search" is the honest
+substitute for the fabricated "Nearby Waypoints" -- it's the sibling
+list from that same search, not a real proximity lookup.
+
+**What's real now:**
+- "Generate Narration" calls the actual `POST /v1/pois/{source_id}/story`
+  (Groq-backed) -- will show a real error right now since
+  `GROQ_API_KEY` isn't configured, rather than fake narration text.
+- "Save to Favorites" calls the real `POST /favorites` with the actual
+  `poi_source_id`.
+- Coordinates shown are the real lat/lng (decimal degrees, not fabricated
+  DMS-with-seconds precision the source data doesn't have).
+- Flight Setup's POI list items are now clickable through to this page,
+  and store the full result set to sessionStorage first.
+
+**Removed as unbackable:** hero photo, "Visual References" grid,
+elevation figure, "Add to Route" button (no such endpoint -- routes are
+formed only by a fresh `/discover` call, not by appending POIs to an
+existing one), "Share" button (no per-POI share endpoint exists), and
+the fake audio player (no playback wiring in this batch -- would need
+`GET` audio endpoint + ElevenLabs, also not configured).
+
+**Next session should start by asking:** does clicking a POI from Flight
+Setup correctly open its detail page with real coordinates showing?
+Then continue with remaining static pages (Settings, GDPR & Data,
+session-history, session-replay, share-view, Aloft Landing Page, 404,
+Privacy Policy, Terms of Service) or revisit the Redis/sessions.py work
+whenever the project owner wants to switch tracks.
