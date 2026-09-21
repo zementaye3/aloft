@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aloft — Journal</title>
+<style>
+  :root {
+    --ink: #14172b;
+    --gray-600: #5b6072;
+    --gray-500: #767b8c;
+    --gray-400: #9a9ea9;
+    --card-border: #ececef;
+    --page-bg: #f7f8fb;
+    --green: #33c26a;
+    --amber: #f2a93b;
+    --red: #ef5b4e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--page-bg);
+  }
+
+  a { color: inherit; }
+
+  .page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  /* ---- Top nav ---- */
+  .topnav {
+    display: flex;
+    align-items: center;
+    height: 68px;
+  }
+
+  .brand {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-right: 48px;
+  }
+
+  .navlinks {
+    display: flex;
+    gap: 32px;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .navlinks a {
+    text-decoration: none;
+    color: var(--gray-600);
+    font-size: 15px;
+    padding-bottom: 22px;
+    position: relative;
+  }
+
+  .navlinks a.active {
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .navlinks a.active::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 3px;
+    height: 2px;
+    background: var(--ink);
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .nav-right svg { width: 19px; height: 19px; color: var(--ink); }
+
+  .nav-right img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .avatar-initial {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #2159e0;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .logout-link {
+    background: none;
+    border: none;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--gray-600);
+    cursor: pointer;
+    padding: 0;
+    font-family: inherit;
+  }
+
+  .logout-link:hover { color: var(--ink); }
+
+  /* ---- Layout ---- */
+  .journal-grid {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 24px;
+    margin-top: 40px;
+  }
+
+  /* ---- Logbook list ---- */
+  .logbook-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  .logbook-head h2 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.7px;
+  }
+
+  .entry-count {
+    font-family: "SF Mono", "Roboto Mono", monospace;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--gray-500);
+    letter-spacing: 0.5px;
+  }
+
+  .entry-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .entry-item {
+    padding: 18px 0 18px 18px;
+    border-left: 2px solid transparent;
+    border-bottom: 1px solid var(--card-border);
+    cursor: pointer;
+  }
+
+  .entry-item.selected {
+    border-left: 2px solid var(--ink);
+  }
+
+  .entry-item:last-child { border-bottom: none; }
+
+  .entry-row-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .route {
+    font-family: "SF Mono", "Roboto Mono", monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray-600);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .route svg { width: 13px; height: 13px; color: var(--gray-400); }
+
+  .date-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: "SF Mono", "Roboto Mono", monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gray-500);
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dot.green { background: var(--green); }
+  .dot.amber { background: var(--amber); }
+  .dot.red { background: var(--red); }
+
+  .entry-item h3 {
+    font-size: 16.5px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .entry-item p {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--gray-500);
+  }
+
+  /* ---- Detail panel ---- */
+  .detail-panel {
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--card-border);
+  }
+
+  .detail-hero {
+    position: relative;
+    height: 254px;
+  }
+
+  .detail-hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .detail-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.5) 100%);
+  }
+
+  .detail-hero-tags {
+    position: absolute;
+    left: 24px;
+    bottom: 20px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .route-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.9);
+    color: var(--ink);
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+  }
+
+  .detail-date {
+    color: #fff;
+    font-family: "SF Mono", "Roboto Mono", monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  .detail-body {
+    padding: 44px 44px 8px;
+  }
+
+  .detail-body h1 {
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    max-width: 640px;
+  }
+
+  .detail-body p {
+    font-size: 17px;
+    line-height: 1.75;
+    color: #2b2e42;
+    margin-bottom: 22px;
+    max-width: 660px;
+  }
+
+  .fade-cut {
+    position: relative;
+    max-height: 60px;
+    overflow: hidden;
+  }
+
+  .fade-cut::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 44px;
+    background: linear-gradient(180deg, rgba(255,255,255,0), #fff);
+  }
+
+  /* ---- Footer ---- */
+  .footer {
+    margin-top: 60px;
+    padding: 32px 0 48px;
+    border-top: 1px solid var(--card-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .footer .copyright {
+    font-size: 13.5px;
+    color: var(--gray-500);
+    margin-top: 6px;
+  }
+
+  .footer-links {
+    display: flex;
+    align-items: center;
+    gap: 26px;
+  }
+
+  .footer-links a {
+    font-size: 15px;
+    color: var(--gray-600);
+    text-decoration: none;
+  }
+
+  .new-entry-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    padding: 13px 20px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+  }
+
+  .new-entry-btn svg { width: 14px; height: 14px; }
+
+  @media (max-width: 900px) {
+    .navlinks { display: none; }
+    .journal-grid { grid-template-columns: 1fr; }
+    .detail-body { padding: 32px 24px; }
+    .detail-body h1 { font-size: 32px; }
+    .footer { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="page">
+
+    <div class="topnav">
+      <div class="brand">Aloft</div>
+      <div class="navlinks">
+        <a href="Dashboard__Light_.html">Dashboard</a>
+        <a href="Flight_Setup__Light_.html">Explore</a>
+        <a href="#" class="active">Journal</a>
+        <a href="Favorites__Light_.html">Favorites</a>
+      </div>
+      <div class="nav-right">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="avatar-initial" id="avatarInitial">?</div>
+        <button class="logout-link" id="logoutBtn" title="Log out">Log out</button>
+      </div>
+    </div>
+
+    <div class="journal-grid">
+
+      <div class="logbook-col">
+        <div class="logbook-head">
+          <h2>Logbook</h2>
+          <span class="entry-count" id="entryCount">-- ENTRIES</span>
+        </div>
+
+        <div class="entry-list" id="entryList">
+          <p style="color: var(--gray-500); font-size: 14px; padding: 8px 0;">Loading...</p>
+        </div>
+      </div>
+
+      <div class="detail-panel" id="detailPanel" style="display:flex; align-items:center; justify-content:center; min-height:300px;">
+        <p style="color: var(--gray-500); font-size: 15px; padding: 40px; text-align:center;">
+          No flights logged yet.<br>Complete a flight to see it here.
+        </p>
+      </div>
+
+    </div>
+
+    <div class="footer">
+      <div>
+        <div class="brand">Aloft</div>
+        <div class="copyright">© 2024 Aloft. Precision Flight Audio.</div>
+      </div>
+      <div class="footer-links">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Support</a>
+        <button class="new-entry-btn" id="newEntryBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
+          NEW ENTRY
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+<script src="js/config.js"></script>
+<script src="js/api-client.js"></script>
+<script>
+  if (!AloftAuth.isLoggedIn()) {
+    window.location.href = 'Log_In__Light_.html';
+  }
+
+  AloftApi.me().then((user) => {
+    document.getElementById('avatarInitial').textContent = user.email.charAt(0).toUpperCase();
+  }).catch(() => {
+    AloftAuth.clearTokens();
+    window.location.href = 'Log_In__Light_.html';
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await AloftApi.logout();
+    window.location.href = 'Log_In__Light_.html';
+  });
+
+  // Journal entries are only ever created automatically when a flight
+  // session completes -- there's no manual-entry endpoint in the
+  // backend, so this is honest about that rather than pretending to
+  // support free-form journaling.
+  document.getElementById('newEntryBtn').addEventListener('click', () => {
+    alert('Journal entries are created automatically when a flight session completes -- there\'s no manual entry option.');
+  });
+
+  function selectEntry(entry, itemEl) {
+    document.querySelectorAll('.entry-item').forEach((el) => el.classList.remove('selected'));
+    itemEl.classList.add('selected');
+
+    const dateStr = new Date(entry.flight_date).toLocaleDateString('en-US', {
+      month: 'long', day: 'numeric', year: 'numeric',
+    });
+    const poiList = entry.narrated_poi_names.length
+      ? entry.narrated_poi_names.join(', ')
+      : 'None recorded';
+    const countryList = entry.countries_flown_over.length
+      ? entry.countries_flown_over.join(', ')
+      : 'None recorded';
+
+    document.getElementById('detailPanel').style.cssText = '';
+    document.getElementById('detailPanel').innerHTML = `
+      <div class="detail-body" style="padding-top:36px;">
+        <h1>${entry.departure_name} to ${entry.arrival_name}</h1>
+        <p><strong>Date:</strong> ${dateStr}</p>
+        <p><strong>Distance:</strong> ${Math.round(entry.distance_km)} km</p>
+        <p><strong>Places narrated:</strong> ${poiList}</p>
+        <p><strong>Countries flown over:</strong> ${countryList}</p>
+      </div>`;
+  }
+
+  aloftApiRequest('/journal/history').then((data) => {
+    const flights = data.flights || [];
+    document.getElementById('entryCount').textContent = `${data.count} ENTR${data.count === 1 ? 'Y' : 'IES'}`;
+    const listEl = document.getElementById('entryList');
+    if (flights.length === 0) {
+      listEl.innerHTML = '<p style="color: var(--gray-500); font-size: 14px; padding: 8px 0;">No flights logged yet.</p>';
+      return;
+    }
+    listEl.innerHTML = '';
+    flights.forEach((entry, i) => {
+      const item = document.createElement('div');
+      item.className = 'entry-item';
+      const dateChip = new Date(entry.flight_date).toLocaleDateString('en-US', { month: 'short', day: '2-digit' }).toUpperCase();
+      item.innerHTML = `
+        <div class="entry-row-top">
+          <span class="route">${entry.departure_iata || entry.departure_name} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg> ${entry.arrival_iata || entry.arrival_name}</span>
+          <span class="date-chip">${dateChip}</span>
+        </div>
+        <h3>${entry.departure_name} &rarr; ${entry.arrival_name}</h3>
+        <p>${entry.narrated_poi_names.length} places narrated &middot; ${Math.round(entry.distance_km)} km</p>`;
+      item.addEventListener('click', () => selectEntry(entry, item));
+      listEl.appendChild(item);
+      if (i === 0) selectEntry(entry, item);
+    });
+  }).catch((err) => {
+    document.getElementById('entryList').innerHTML =
+      `<p style="color: var(--gray-500); font-size: 14px;">Could not load journal: ${err.message}</p>`;
+  });
+</script>
+</body>
+</html>

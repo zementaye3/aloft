@@ -478,3 +478,54 @@ designs (Flight Journal, POI Detail, Active Flight, Settings, GDPR &
 Data, the two session-history/session-replay pages, share-view,
 Aloft Landing Page, 404, Privacy Policy, Terms of Service) one batch at
 a time from the same Coded UI folder.
+
+---
+
+## 2026-09-16 — Session 9: Flight Journal wired; found a real backend gap
+
+**Real backend gap found (not a frontend issue, flagging clearly rather
+than working around it silently):** read `flight_journal_service.py`
+directly. `save_flight_journal_entry()`'s own docstring says "Call this
+when a flight session ends" -- but grepping the entire codebase for
+callers of that function turns up **zero results outside its own
+definition.** Nothing anywhere actually calls it. This means:
+- `GET /journal/history` will return an empty list forever, for every
+  user, regardless of how many flights are flown.
+- `GET /journal/stats` (which also backs Dashboard's Lifetime Logs) will
+  return all zeros forever, for the same reason -- `_update_user_stats`
+  is only ever called from inside `save_flight_journal_entry`.
+
+This isn't "no data yet because nobody's flown" -- it's "no code path
+exists yet that would ever create this data," most likely a missing call
+somewhere in `sessions.py`'s flight-session-completion logic (not
+investigated yet -- that's a `sessions.py`-focused task, distinct from
+the page-wiring batches this and recent sessions have been doing).
+
+**Flight Journal copied in from the Coded UI folder and wired for
+real**, against the actual `FlightJournalEntry` model
+(`departure_name`, `arrival_name`, `distance_km`, `narrated_poi_names`,
+`countries_flown_over`, `flight_date` -- no narrative text field, no
+photos, no severity/status field). The original mockup was entirely
+fabricated: invented pilot-diary prose ("The departure out of San
+Francisco was incredibly smooth today..."), fake hero photos, a fake
+"87 ENTRIES" count, and colored status dots with nothing backing them.
+All replaced with the real fields only, correctly showing an empty
+"No flights logged yet" state (which, per the gap above, is what every
+account will show until `sessions.py` is fixed). The mockup's "NEW
+ENTRY" button is now honest about there being no manual-entry endpoint,
+rather than doing nothing silently.
+
+**Nav links fully connected now** across Dashboard, Flight Setup,
+Favorites, and Flight Journal -- all four link to each other correctly.
+Only "Explore" (no real destination -- unclear what page this should
+even be, was never in the original 19-page list under that name) has no
+real link yet.
+
+**Next session should start by asking:** does the project owner want to
+tackle the `sessions.py` journal-entry gap next (a backend fix, not a
+page-wiring batch -- would make Dashboard stats and Journal history
+actually populate for the first time ever), or continue wiring remaining
+static pages first (POI Detail, Active Flight, Settings, GDPR & Data,
+session-history, session-replay, share-view, Aloft Landing Page, 404,
+Privacy Policy, Terms of Service)? Either is reasonable; flagging the
+choice rather than assuming.
