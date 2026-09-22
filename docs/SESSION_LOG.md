@@ -582,3 +582,46 @@ Then continue with remaining static pages (Settings, GDPR & Data,
 session-history, session-replay, share-view, Aloft Landing Page, 404,
 Privacy Policy, Terms of Service) or revisit the Redis/sessions.py work
 whenever the project owner wants to switch tracks.
+
+---
+
+## 2026-09-16 — Session 11: Settings wired as a real, mostly read-only page
+
+**Real finding before wiring:** checked whether any endpoint lets a user
+update their own profile (name, email, role) -- grepped for `UserUpdate`
+usage and any PUT/PATCH route across every router. **Zero results.**
+There is no self-service profile-update endpoint anywhere in the
+backend. The `User` model also has no first/last name fields at all --
+only `email`. And `Role` is `admin | premium | user | guest`
+(role-based access control), not the mockup's fabricated airline-crew
+titles ("Chief Pilot", "First Officer", etc.).
+
+**The original mockup's "General Information" form (editable first
+name, last name, email, role dropdown) could not be wired honestly --
+there's nothing to save it to.** Its own JS didn't even try: the "Save
+Changes" button just showed a fake "Changes saved" toast with zero
+persistence, which is exactly the kind of dishonest UI this project has
+been avoiding. Replaced with a read-only "Account Information" panel
+showing real fields from `GET /v1/auth/me`: email, role, verified
+status, MFA status, account creation date, last login. An explicit note
+on the page says why it's read-only, rather than leaving the absence
+unexplained.
+
+**Also removed as unbackable:** "System Preferences" (Telemetry Sync /
+High-Contrast Mode toggles -- zero backend concept, not even a stub) and
+"Data Stream Preview" (fabricated live altitude/airspeed/status readout,
+wildly out of place on a settings page regardless). Sidebar items with
+no real destination (Notifications, Billing & Plans) are kept but
+visually marked "Soon" and non-clickable rather than dead `#` links
+pretending to lead somewhere. "Privacy & Data" points to
+`GDPR___Data__Light_.html` (not yet copied into the repo) -- same
+"Soon" treatment, ready to activate once that page exists.
+
+**Settings is now reachable** from Dashboard, Flight Setup, Favorites,
+and Flight Journal via a new link next to each page's Logout button.
+
+**Next session should start by asking:** does the Settings page load
+real account info correctly (email, role, dates)? Then continue with
+remaining static pages: GDPR & Data (which Settings already links to),
+Active Flight, session-history, session-replay, share-view, Aloft
+Landing Page, 404, Privacy Policy, Terms of Service.
