@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Privacy &amp; Data Control — Aloft</title>
+<style>
+  :root {
+    --ink: #14172b;
+    --gray-600: #5b6072;
+    --gray-500: #767b8c;
+    --card-border: #ececef;
+    --page-bg: #f7f7fc;
+    --red: #c8342c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--page-bg);
+  }
+
+  a { color: inherit; }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 32px 40px 0;
+  }
+
+  .back-link {
+    position: absolute;
+    left: 40px;
+    top: 32px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .back-link svg { width: 16px; height: 16px; }
+
+  .brand {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .page {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 88px 40px 100px;
+  }
+
+  .page-title {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    margin-bottom: 16px;
+  }
+
+  .page-sub {
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--gray-600);
+    max-width: 660px;
+    margin-bottom: 56px;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .data-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 2px rgba(20,23,43,0.03);
+  }
+
+  .icon-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 22px;
+  }
+
+  .icon-circle.blue { background: #e2e8fc; }
+  .icon-circle.red { background: #fbdedc; }
+
+  .icon-circle svg { width: 20px; height: 20px; }
+  .icon-circle.blue svg { color: var(--ink); }
+  .icon-circle.red svg { color: var(--red); }
+
+  .data-card h2 {
+    font-size: 23px;
+    font-weight: 800;
+    margin-bottom: 14px;
+  }
+
+  .data-card p {
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--gray-600);
+    margin-bottom: 28px;
+    flex: 1;
+  }
+
+  .btn-dark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    padding: 16px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .btn-dark svg { width: 15px; height: 15px; }
+
+  .btn-outline-red {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    color: var(--red);
+    border: 1.5px solid var(--red);
+    padding: 16px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .helper-text {
+    text-align: center;
+    font-size: 13px;
+    color: var(--gray-500);
+    margin-top: 14px;
+  }
+
+  @media (max-width: 720px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .topbar { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .back-link { position: static; }
+    .page { padding-top: 40px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <a href="settings.html" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to Settings
+    </a>
+    <div class="brand">Aloft</div>
+  </div>
+
+  <div class="page">
+    <h1 class="page-title">Privacy &amp; Data Control</h1>
+    <p class="page-sub">Manage your personal information and privacy preferences. We believe your data belongs to you, and we provide transparent tools to control it.</p>
+
+    <div class="card-grid">
+      <div class="data-card">
+        <div class="icon-circle blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg>
+        </div>
+        <h2>Your Data</h2>
+        <p>Request a complete copy of all your account information, favorites, flight journal entries, and stats in JSON format.</p>
+        <button class="btn-dark" id="exportBtn">
+          Request Archive
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+        <div class="helper-text" id="exportHelper">Generated instantly and downloaded as a .json file -- no waiting period.</div>
+      </div>
+
+      <div class="data-card">
+        <div class="icon-circle red">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22L12 2zm0 5.5a1 1 0 0 1 1 1v6a1 1 0 0 1-2 0v-6a1 1 0 0 1 1-1zm0 10.5a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/></svg>
+        </div>
+        <h2>Delete Account</h2>
+        <p>Permanently remove your account and all associated data from our servers. This action cannot be undone and will result in immediate loss of access.</p>
+        <button class="btn-outline-red" id="deleteBtn">Delete Account</button>
+        <div class="helper-text" id="deleteHelper">This deployment doesn't have Redis Cloud configured yet, which account deletion requires -- expect a real error, not a fake success.</div>
+      </div>
+    </div>
+  </div>
+
+<script src="js/config.js"></script>
+<script src="js/api-client.js"></script>
+<script>
+  if (!AloftAuth.isLoggedIn()) {
+    window.location.href = 'Log_In__Light_.html';
+  }
+
+  document.getElementById('exportBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('exportBtn');
+    const helper = document.getElementById('exportHelper');
+    btn.disabled = true;
+    helper.textContent = 'Generating...';
+    try {
+      const data = await aloftApiRequest('/v1/user/data');
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'aloft-data-export.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      helper.textContent = 'Downloaded. Generated instantly, no waiting period.';
+    } catch (err) {
+      helper.textContent = `Export failed: ${err.message}`;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById('deleteBtn').addEventListener('click', async () => {
+    const reason = prompt('This backend requires a reason (at least 10 characters) to process a deletion request. This is for real -- it will attempt to actually schedule deletion.');
+    if (!reason) return;
+    const helper = document.getElementById('deleteHelper');
+    const btn = document.getElementById('deleteBtn');
+    btn.disabled = true;
+    helper.textContent = 'Requesting...';
+    try {
+      const data = await aloftApiRequest('/v1/user/data', {
+        method: 'DELETE',
+        body: { require_confirmation: true, reason },
+      });
+      helper.textContent = `Deletion scheduled for ${new Date(data.deletion_scheduled).toLocaleString()}. Contact support to cancel if this was a mistake.`;
+    } catch (err) {
+      helper.textContent = `Could not process: ${err.message}`;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+
+</body>
+</html>
