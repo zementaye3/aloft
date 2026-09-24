@@ -661,3 +661,39 @@ session-replay, share-view, Aloft Landing Page, 404, Privacy Policy,
 Terms of Service), or pivot to the deferred backend work (Redis Cloud
 setup, which would unblock Active Flight AND real account deletion in
 one move; plus the sessions.py journal-entry gap from Session 9).
+
+---
+
+## 2026-09-16 — Session 12: GDPR & Data wired -- export fully works, deletion honestly doesn't yet
+
+**Real finding before wiring:** `DELETE /v1/user/data`,
+`POST /v1/user/data/cancel-deletion`, and `GET /v1/user/data/status` all
+require Redis via the hard-failing `get_redis()` (same one `sessions.py`
+uses) -- unconditional failure right now, same class of blocker as
+Active Flight. Only `GET /v1/user/data` (the actual data export) works
+without Redis.
+
+**"Your Data" (export) is fully wired and works for real** -- calls the
+live endpoint, downloads the real JSON response as a file client-side.
+Fixed two fabricated details from the mockup: it claimed "may take up to
+48 hours to process" (the real endpoint is synchronous, no waiting
+period) and offered a ".json or .csv" choice (only JSON exists, no CSV
+export anywhere in the backend).
+
+**"Delete Account" is wired to genuinely attempt the real call** (with a
+prompt for the required `reason` field, min 10 chars, matching the
+backend's actual validation) rather than skipped -- but it's honest
+up front that Redis isn't configured yet, so expect a real error, not a
+fake success. This follows the same "wire it, don't fake it" approach as
+Flight Setup's flight-number path.
+
+**Settings' "Privacy & Data" sidebar link is now active** (was marked
+"Soon") since this page now exists and works for what it can.
+
+**Next session should start by asking:** does the data export actually
+download a real, complete JSON file with the account's real data? Then
+continue with remaining static pages (Active Flight, session-history,
+session-replay, share-view, Aloft Landing Page, 404, Privacy Policy,
+Terms of Service), or pivot to the deferred backend work (Redis Cloud
+setup, which would unblock Active Flight AND real account deletion in
+one move; plus the sessions.py journal-entry gap from Session 9).
